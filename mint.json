@@ -7,7 +7,7 @@
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#111111",
+    "primary": "#444444",
     "light": "#ffffff",
     "dark": "#111111",
     "anchors": {
@@ -15,15 +15,18 @@
       "to": "#111111"
     }
   },
+  "codeBlock": {
+    "mode": "auto"
+  },
   "topbarLinks": [
     {
       "name": "Support",
-      "url": "mailto:hi@mintlify.com"
+      "url": "mailto:help@tensorstudio.ai"
     }
   ],
   "topbarCtaButton": {
     "name": "Platform",
-    "url": "https://dashboard.mintlify.com"
+    "url": "https://app.tensorstudio.ai/signin"
   },
   "tabs": [
     {
@@ -35,12 +38,12 @@
     {
       "name": "Community",
       "icon": "discord",
-      "url": "https://mintlify.com/community"
+      "url": "https://discord.gg/VgYQNQas"
     },
     {
       "name": "Blog",
       "icon": "blog",
-      "url": "https://mintlify.com/blog"
+      "url": "https://soket.ai/blog"
     }
   ],
   "navigation": [
@@ -48,8 +51,17 @@
       "group": "Get Started",
       "pages": [
         "introduction",
-        "quickstart",
+        "quickstart_playground",  
+        "quickstart_websocket",
         "development"
+      ]
+    },
+    {
+      "group": "Concepts",
+      "pages": [
+        "concepts/vad",
+        "concepts/tool_calling",
+        "concepts/voice"
       ]
     },
     {
@@ -79,8 +91,8 @@
     }
   ],
   "footerSocials": {
-    "x": "https://x.com/mintlify",
-    "github": "https://github.com/mintlify",
-    "linkedin": "https://linkedin.com/company/mintlify"
+    "x": "https://x.com/soketlabs",
+    "github": "https://github.com/soketlabs",
+    "linkedin": "https://linkedin.com/company/soketlabs"
   }
 }

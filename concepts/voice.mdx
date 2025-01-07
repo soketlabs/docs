@@ -1,0 +1,32 @@
+---
+title: 'Voices'
+description: 'This document explains the Voice Activity Detection (VAD) feature in our Realtime Speech API.'
+---
+
+## Overview
+Voice Activity Detection (VAD) is a crucial component in speech processing systems. It is a signal processing technique used to detect the presence or absence of human speech in an audio signal. By differentiating between speech and non-speech segments, VAD optimizes the performance of real-time speech applications, including Automatic Speech Recognition (ASR), Voice over IP (VoIP), and conversational AI.
+
+## Key Parameters in VAD
+The following parameters are available for configuring VAD in your Real-Time Speech API:
+
+### Turn Detection
+- **Configuration**: Turn detection is an optional feature that can be enabled or disabled. Setting it to `null` disables turn detection.
+- **Server VAD**: This is the currently supported type of turn detection. It detects the start and end of speech based on audio volume and responds at the end of the user's speech.
+
+### Parameters for Turn Detection
+| **Parameter**          | **Description**                                                                                   | **Default Value** | **Range**       |
+|------------------------|---------------------------------------------------------------------------------------------------|-------------------|----------------|
+| `type`                 | Type of turn detection. Currently, only `server_vad` is supported.                                | `server_vad`      | N/A            |
+| `threshold`            | Activation threshold for VAD (0.0 to 1.0). Higher values require louder audio to activate.       | 0.5               | 0.0 - 1.0      |
+| `prefix_padding_ms`    | Amount of audio to include before the VAD-detected speech (in milliseconds).                      | 300ms             | N/A            |
+| `silence_duration_ms`  | Duration of silence to detect speech stop (in milliseconds). Shorter values improve response time.| 500ms             | N/A            |
+| `create_response`      | Whether to automatically generate a response when VAD is enabled.                                | `true`            | `true/false`   |
+
+### Explanation of Parameters
+- **`threshold`**: Adjust this value based on the noise level of the environment. A higher threshold is ideal for noisy settings, ensuring the model activates only for significant audio inputs.
+- **`prefix_padding_ms`**: Useful for capturing audio context before detected speech starts, providing smoother interactions.
+- **`silence_duration_ms`**: This parameter controls the responsiveness of the system. Lower values result in faster responses but may cut off speech during short pauses.
+- **`create_response`**: Enabling this ensures the system generates a response as soon as speech is detected and stops, streamlining interaction workflows.
+
+By fine-tuning these parameters, users can optimize VAD performance for various real-time applications, ensuring precise and efficient voice interactions.
+
