@@ -1,0 +1,148 @@
+---
+title: 'Quickstart with SDK'
+description: 'Get started with the Realtime Speech API SDK in minutes'
+---
+
+## Installation
+
+Install the SDK using npm:
+
+```bash
+npm install https://github.com/soketlabs/openai-realtime-api-beta
+```
+
+## Creating a Client
+
+```typescript
+import { RealtimeClient } from '@openai/realtime-api-beta';
+
+const client = new RealtimeClient({
+  apiKey: 'your-api-key',
+  // For browser environments, set this to true
+  dangerouslyAllowAPIKeyInBrowser: true 
+});
+
+// Or use a relay server to protect your API key
+const client = new RealtimeClient({
+  url: 'your-relay-server-url'
+});
+```
+
+## Session Configuration
+
+After creating the client, you can configure various session parameters:
+
+```typescript
+// Configure the session with multiple parameters
+client.updateSession({
+  // Set system instructions for the AI
+  instructions: 'You are a helpful assistant',
+  
+  // Set voice and language
+  voice: 'monica',
+  language: 'en',
+  
+  // Set up Voice Activity Detection
+  turn_detection: {
+    type: 'server_vad',
+    threshold: 0.5,
+    prefix_padding_ms: 300,
+    silence_duration_ms: 500
+  }
+});
+```
+
+## Basic Usage
+
+### Connect and Send Messages
+
+```typescript
+// Connect to the service
+await client.connect();
+
+// Send a text message
+client.sendUserMessageContent([{
+  type: 'input_text',
+  text: 'Hello!'
+}]);
+
+// Listen for responses
+client.on('conversation.updated', ({ item, delta }) => {
+  if (delta?.audio) {
+    // Handle audio response
+    playAudio(delta.audio);
+  }
+  if (item.formatted.text) {
+    // Handle text response
+    console.log(item.formatted.text);
+  }
+});
+```
+
+## Key Features
+
+### Audio Handling
+```typescript
+// Stream audio input from microphone
+const wavRecorder = new WavRecorder({ sampleRate: 8000 });
+await wavRecorder.record((data) => {
+  client.appendInputAudio(data.mono);
+});
+
+// Handle audio responses
+client.on('conversation.updated', ({ delta }) => {
+  if (delta?.audio) {
+    const audioPlayer = new WavStreamPlayer({ sampleRate: 8000 });
+    audioPlayer.add16BitPCM(delta.audio);
+  }
+});
+
+// Configure VAD (Voice Activity Detection)
+client.updateSession({
+  turn_detection: {
+    type: 'server_vad',
+    threshold: 0.5,
+    prefix_padding_ms: 300,
+    silence_duration_ms: 500
+  }
+});
+```
+
+### Voice Settings
+```typescript
+// Change voice and language
+client.updateSession({
+  voice: 'monica',  // Set voice
+  language: 'en'    // Set language
+});
+```
+
+### Tool Integration
+```typescript
+// Add a custom tool
+client.addTool(
+  {
+    name: 'get_weather',
+    description: 'Get weather for location',
+    parameters: {
+      type: 'object',
+      properties: {
+        location: {
+          type: 'string',
+          description: 'City name'
+        }
+      },
+      required: ['location']
+    }
+  },
+  async ({ location }) => {
+    // Tool implementation
+    return { temperature: 72, conditions: 'sunny' };
+  }
+);
+```
+
+## Next Steps
+- Explore [Tool Calling](/concepts/tool_calling) for extended functionality
+- Learn about [Voice Activity Detection](/concepts/vad) for better speech interaction
+- Check out available [Voices](/concepts/voice) for your application

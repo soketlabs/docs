@@ -38,12 +38,12 @@
     {
       "name": "Community",
       "icon": "discord",
-      "url": "https://discord.gg/VgYQNQas"
+      "url": "https://discord.gg/daRQX4yF"
     },
     {
       "name": "Blog",
       "icon": "blog",
-      "url": "https://soket.ai/blog"
+      "url": "https://soket.ai/blogs/pragna_1b"
     }
   ],
   "navigation": [
@@ -53,7 +53,7 @@
         "introduction",
         "quickstart_playground",  
         "quickstart_websocket",
-        "development"
+        "quickstart_sdk"
       ]
     },
     {
@@ -62,31 +62,6 @@
         "concepts/vad",
         "concepts/tool_calling",
         "concepts/voice"
-      ]
-    },
-    {
-      "group": "Essentials",
-      "pages": [
-        "essentials/markdown",
-        "essentials/code",
-        "essentials/images",
-        "essentials/settings",
-        "essentials/navigation",
-        "essentials/reusable-snippets"
-      ]
-    },
-    {
-      "group": "API Documentation",
-      "pages": [
-        "api-reference/introduction"
-      ]
-    },
-    {
-      "group": "Endpoint Examples",
-      "pages": [
-        "api-reference/endpoint/get",
-        "api-reference/endpoint/create",
-        "api-reference/endpoint/delete"
       ]
     }
   ],

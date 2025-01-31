@@ -3,88 +3,192 @@ title: 'Tool Calling'
 description: 'This document explains the Tool Calling feature in our Realtime Speech API.'
 ---
 
+## Overview
 
-Help me generate quickstart page similar to this doc
+Tool Calling enables AI models to execute predefined functions during conversations, allowing them to perform actions like retrieving data, registering complaints, or manipulating application state. This feature bridges the gap between conversational AI and practical functionality.
 
+## Adding Tools
 
-## Setup your development
+Tools are added to the Realtime client using the `addTool()` method. Each tool requires two components:
+1. Tool Definition - Describes the tool's purpose and parameters
+2. Tool Implementation - The actual function that executes when the tool is called
 
-Learn how to update your docs locally and deploy them to the public.
+### Basic Tool Structure
 
-### Edit and preview
+```typescript
+client.addTool(
+  {
+    name: 'tool_name',
+    description: 'Description of what the tool does',
+    parameters: {
+      type: 'object',
+      properties: {
+        // Parameter definitions
+      },
+      required: ['param1', 'param2'] // List required parameters
+    }
+  },
+  async (params) => {
+    // Tool implementation
+    return result;
+  }
+);
+```
 
-<AccordionGroup>
-  <Accordion icon="github" title="Clone your docs locally">
-    During the onboarding process, we created a repository on your Github with
-    your docs content. You can find this repository on our
-    [dashboard](https://dashboard.mintlify.com). To clone the repository
-    locally, follow these
-    [instructions](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
-    in your terminal.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Preview changes">
-    Previewing helps you make sure your changes look as intended. We built a
-    command line interface to render these changes locally. 1. Install the
-    [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the
-    documentation changes locally with this command: ``` npm i -g mintlify ```
-    2. Run the following command at the root of your documentation (where
-    `mint.json` is): ``` mintlify dev ```
-  </Accordion>
-</AccordionGroup>
+### Example: Weather Tool
 
-### Deploy your changes
+Here's an example of a tool that retrieves weather information for given coordinates:
 
-<AccordionGroup>
+```typescript
+client.addTool(
+  {
+    name: 'get_weather',
+    description: 'Retrieves the weather for a given lat, lng coordinate pair',
+    parameters: {
+      type: 'object',
+      properties: {
+        lat: {
+          type: 'number',
+          description: 'Latitude'
+        },
+        lng: {
+          type: 'number',
+          description: 'Longitude'
+        },
+        location: {
+          type: 'string',
+          description: 'Name of the location'
+        }
+      },
+      required: ['lat', 'lng', 'location']
+    }
+  },
+  async ({ lat, lng, location }) => {
+    // Implementation
+    const result = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m`
+    );
+    const json = await result.json();
+    return json;
+  }
+);
+```
 
-<Accordion icon="message-bot" title="Install our Github app">
-  Our Github app automatically deploys your changes to your docs site, so you
-  don't need to manage deployments yourself. You can find the link to install on
-  your [dashboard](https://dashboard.mintlify.com). Once the bot has been
-  successfully installed, there should be a check mark next to the commit hash
-  of the repo.
-</Accordion>
-<Accordion icon="rocket" title="Push your changes">
-  [Commit and push your changes to
-  Git](https://docs.github.com/en/get-started/using-git/pushing-commits-to-a-remote-repository#about-git-push)
-  for your changes to update in your docs site. If you push and don't see that
-  the Github app successfully deployed your changes, you can also manually
-  update your docs through our [dashboard](https://dashboard.mintlify.com).
-</Accordion>
+### Example: Complaint Registration
 
-</AccordionGroup>
+Here's an example of a tool for registering customer complaints:
 
-## Update your docs
+```typescript
+client.addTool(
+  {
+    name: 'register_complaint',
+    description: 'Register a customer complaint',
+    parameters: {
+      type: 'object',
+      properties: {
+        reason: {
+          type: 'string',
+          description: 'The reason for the complaint'
+        },
+        issue_tag: {
+          type: 'string',
+          description: 'The tag for the issue',
+          enum: [
+            'router_issue',
+            'internet_issue',
+            'network_slow',
+            'bill_not_paid',
+            'network_down',
+            'plan_change_in_progress'
+          ]
+        }
+      },
+      required: ['reason', 'issue_tag']
+    }
+  },
+  async ({ reason, issue_tag }) => {
+    // Implementation
+    const complaint_number = generateComplaintNumber();
+    return { complaint_number };
+  }
+);
+```
 
-Add content directly in your files with MDX syntax and React components. You can use any of our components, or even build your own.
+## Best Practices
 
-<CardGroup>
+1. **Clear Descriptions**: Provide detailed descriptions for tools and parameters to help the AI understand when and how to use them.
 
-<Card title="Style Your Docs" icon="paintbrush" href="/settings/global">
-  Add flair to your docs with personalized branding.
-</Card>
+2. **Parameter Validation**: Use the `required` field and parameter types to ensure the AI provides necessary information.
 
-<Card
-  title="Add API Endpoints"
-  icon="square-code"
-  href="/api-playground/configuration"
->
-  Implement your OpenAPI spec and enable API user interaction.
-</Card>
+3. **Error Handling**: Implement proper error handling in tool implementations:
 
-<Card
-  title="Integrate Analytics"
-  icon="chart-mixed"
-  href="/analytics/supported-integrations"
->
-  Draw insights from user interactions with your documentation.
-</Card>
+```typescript
+async (params) => {
+  try {
+    // Tool implementation
+    return result;
+  } catch (error) {
+    return {
+      error: true,
+      message: 'Failed to execute tool: ' + error.message
+    };
+  }
+}
+```
 
-<Card
-  title="Host on a Custom Domain"
-  icon="browser"
-  href="/settings/custom-domain/subdomain"
->
-  Keep your docs on your own website's subdomain.
-</Card>
+4. **State Management**: When tools modify application state, ensure changes are properly reflected in your UI:
 
-</CardGroup>
+```typescript
+client.addTool(
+  {
+    name: 'update_state',
+    description: 'Updates application state',
+    parameters: {
+      type: 'object',
+      properties: {
+        key: { type: 'string' },
+        value: { type: 'string' }
+      },
+      required: ['key', 'value']
+    }
+  },
+  async ({ key, value }) => {
+    setState(prevState => ({
+      ...prevState,
+      [key]: value
+    }));
+    return { success: true };
+  }
+);
+```
+
+## Tool Types
+
+Tools can be categorized based on their functionality:
+
+1. **Data Retrieval Tools**: Fetch external data (like weather information)
+2. **State Management Tools**: Modify application state
+3. **Action Tools**: Perform specific actions (like registering complaints)
+4. **Integration Tools**: Interface with external systems or APIs
+
+## Security Considerations
+
+1. **Input Validation**: Always validate tool parameters before processing
+2. **API Key Protection**: Never expose sensitive credentials in tool implementations
+3. **Rate Limiting**: Implement rate limiting for tools that access external services
+4. **Error Boundaries**: Implement proper error handling to prevent crashes
+
+## Debugging Tools
+
+To debug tool calls, you can monitor events in the conversation:
+
+```typescript
+client.on('realtime.event', (event) => {
+  if (event.event.type === 'function_call') {
+    console.log('Tool called:', event.event);
+  }
+});
+```
+
+This will help you track when and how tools are being used during conversations.
+
