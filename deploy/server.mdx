@@ -1,0 +1,149 @@
+---
+title: 'Backend application (updating..)' 
+description: 'Deploy in your server backend'
+---
+
+## Setting up a Relay Server
+
+The relay server acts as an intermediary between your client applications and OpenAI's Realtime Speech API. Here's how to set it up:
+
+### Prerequisites
+
+- Node.js 18 or higher
+- TensorStudio API key
+
+### Installation
+
+First, install the required dependencies:
+
+```bash
+npm install express ws @openai/realtime-api-beta
+```
+
+### Create the Relay Server
+
+```javascript
+const express = require('express');
+const { WebSocketServer } = require('ws');
+const { RealtimeClient } = require('@openai/realtime-api-beta');
+
+const app = express();
+const server = app.listen(3000);
+const wss = new WebSocketServer({ server });
+
+// Initialize OpenAI Realtime client
+const client = new RealtimeClient({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+wss.on('connection', async (ws) => {
+  try {
+    // Create a speech stream
+    const stream = await client.beta.audio.speech.streaming.create({
+      model: 'whisper-1',
+      language: 'en',
+    });
+
+    // Handle incoming audio data from client
+    ws.on('message', async (data) => {
+      try {
+        await stream.write(data);
+      } catch (error) {
+        console.error('Error writing to stream:', error);
+      }
+    });
+
+    // Handle stream responses
+    for await (const response of stream) {
+      ws.send(JSON.stringify(response));
+    }
+
+    // Handle client disconnect
+    ws.on('close', () => {
+      stream.close();
+    });
+
+  } catch (error) {
+    console.error('Connection error:', error);
+    ws.close();
+  }
+});
+```
+
+### Environment Setup
+
+Create a `.env` file:
+
+```bash
+OPENAI_API_KEY=your-openai-api-key
+```
+
+### Running the Server
+
+```bash
+node server.js
+```
+
+## Connecting to the Relay Server
+
+Here's how to connect to your relay server from your backend application:
+
+```javascript
+const WebSocket = require('ws');
+
+const ws = new WebSocket('ws://localhost:3000');
+
+ws.on('open', () => {
+  console.log('Connected to relay server');
+});
+
+ws.on('message', (data) => {
+  const response = JSON.parse(data);
+  console.log('Received:', response);
+});
+
+// Send audio data
+function sendAudioChunk(audioData) {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(audioData);
+  }
+}
+```
+
+## Security Considerations
+
+1. **API Key Protection**: Never expose your OpenAI API key to the client side.
+2. **Authentication**: Implement proper authentication for your WebSocket connections.
+3. **Rate Limiting**: Add rate limiting to prevent abuse.
+4. **HTTPS**: Use WSS (WebSocket Secure) in production.
+
+## Error Handling
+
+Add proper error handling to your relay server:
+
+```javascript
+ws.on('error', (error) => {
+  console.error('WebSocket error:', error);
+});
+
+stream.on('error', (error) => {
+  console.error('Stream error:', error);
+  ws.close();
+});
+```
+
+## Production Deployment
+
+For production deployment:
+
+1. Use environment variables
+2. Implement proper logging
+3. Add monitoring
+4. Set up SSL/TLS
+5. Use process managers like PM2
+
+```bash
+npm install pm2 -g
+pm2 start server.js
+```
+

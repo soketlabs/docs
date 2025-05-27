@@ -51,20 +51,32 @@
       "group": "Get Started",
       "pages": [
         "introduction",
-        "quickstart_playground",  
-        "quickstart_websocket",
+        "quickstart_playground",
+        {
+          "group": "Quickstart with SDK",
+          "pages": [
+            "sdk/quickstart_nodejs_sdk",
+            "sdk/quickstart_python_sdk"
+          ]
+        }, 
+        "examples/index"
+      ]
+    },
+    {
+      "group": "Deployment",
+      "pages": [
+        "deploy/browser",
+        "deploy/server",
         {
           "group": "Integrations",
           "pages": [
             "integrations/index",
-            "quickstart_sdk",
-            "python_sdk",
             "plivo_sdk" 
           ]
-        },
-        "examples/index"
+        }
       ]
     },
+  
     {
       "group": "Concepts",
       "pages": [
