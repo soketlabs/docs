@@ -46,6 +46,9 @@ Below are several examples of using these connection details to initialize a Web
 <CodeGroup>
 ```javascript NodeJS
 import WebSocket from "ws";
+import 'dotenv/config';
+
+const API_KEY = process.env.TENSOR_STUDIO_API_KEY;
 
 const url = "wss://api.soket.ai/v1/realtime?model=pragna-realtime";
 const ws = new WebSocket(url, {

@@ -53,7 +53,16 @@
         "introduction",
         "quickstart_playground",  
         "quickstart_websocket",
-        "quickstart_sdk"
+        {
+          "group": "Integrations",
+          "pages": [
+            "integrations/index",
+            "quickstart_sdk",
+            "python_sdk",
+            "plivo_sdk" 
+          ]
+        },
+        "examples/index"
       ]
     },
     {
