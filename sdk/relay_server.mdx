@@ -1,0 +1,110 @@
+---
+title: 'Relay Server'
+description: 'Connect to Realtime Speech API through relay server'
+---
+
+## Setting up a Relay Server
+
+Connecting directly to tensorstudio through SDK on browser exposes your api-key. If you are running your own relay server, e.g. with the `Realtime Console`, you can instead connect to the relay server URL.
+
+### 1. Install Realtime Console
+
+First, install the OpenAI Realtime Console globally:
+
+```bash
+git clone https://github.com/soketlabs/realtime-console.git
+cd realtime-console
+npm install
+```
+### 2. Set environment variables for realtime-console
+Create a `.env` file in realtime-console directory
+```bash
+OPENAI_API_KEY=<your-api-key>
+REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
+```
+
+### 3. Start realtime-console
+```bash
+cd realtime-console
+npm run start
+```
+This will start realtime-console in `port:3005` by default. \
+Change port:  `PORT=<your port>` in `package.json{}` file in realtime-console directory.
+<Frame>
+<img
+  className="block"
+  style={{ borderRadius: '15px' }}
+  src="/images/realtime_console_port.png"
+  alt="Hero Light"
+/>
+</Frame>
+
+### 4. Start the Relay Server
+Run relay server in a new terminal:
+
+```bash
+cd realtime-console
+npm run relay
+```
+The relay server will start running on `REACT_APP_LOCAL_RELAY_SERVER_URL` that you have set, in this case `ws://localhost:8081` .
+
+### 5. Connect to Relay Server
+
+#### Install NodeJS SDK
+```bash
+npm install https://github.com/soketlabs/openai-realtime-api-beta
+```
+
+#### Using Node.js SDK
+
+```javascript
+import { RealtimeClient } from '@openai/realtime-api-beta';
+
+const client = new RealtimeClient({
+  url: 'your-relay-server-url'
+});
+```
+
+## Monitor relay-server
+You can monitor session events in your realtime-console running
+<Frame>
+<img
+  className="block"
+  style={{ borderRadius: '15px' }}
+  src="/images/realtime_console_example.png"
+  alt="Hero Light"
+/>
+</Frame>
+
+## Production Deployment
+
+For production:
+
+1. Use secure WebSocket (WSS) with SSL/TLS
+2. Update the relay server URL to your production domain
+3. Add authentication if needed
+4. Use environment variables for configuration
+
+Example production configuration:
+
+```javascript
+const client = new RealtimeClient({
+  baseURL: 'wss://your-domain.com/relay',
+  // Other configuration options
+});
+```
+
+## Security Considerations
+
+- Never expose your OpenAI API key in client-side code
+- Use HTTPS/WSS in production
+- Implement rate limiting
+- Add authentication to your relay server
+- Monitor server usage and implement proper error handling
+
+## Common Issues
+
+1. **Connection Refused**: Make sure the relay server is running
+2. **SSL/TLS Errors**: Check certificate configuration for WSS
+3. **Authentication Errors**: Verify API key in `.env` file
+

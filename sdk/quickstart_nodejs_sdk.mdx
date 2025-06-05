@@ -19,6 +19,7 @@ import { RealtimeClient } from '@openai/realtime-api-beta';
 const client = new RealtimeClient({
   apiKey: 'your-api-key',
   // For browser environments, set this to true
+  /* Warning: Use only in development or testing — exposes your API key */
   dangerouslyAllowAPIKeyInBrowser: true 
 });
 
@@ -30,7 +31,7 @@ const client = new RealtimeClient({
 
 ## Session Configuration
 
-After creating the client, you can configure various session parameters:
+After creating the client, you can set instructions for your AI agent, configure various session parameters:
 
 ```typescript
 // Configure the session with multiple parameters

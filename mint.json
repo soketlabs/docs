@@ -55,6 +55,7 @@
         {
           "group": "Quickstart with SDK",
           "pages": [
+            "sdk/relay_server",
             "sdk/quickstart_nodejs_sdk",
             "sdk/quickstart_python_sdk"
           ]
