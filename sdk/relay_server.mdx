@@ -48,7 +48,20 @@ npm run relay
 ```
 The relay server will start running on `REACT_APP_LOCAL_RELAY_SERVER_URL` that you have set, in this case `ws://localhost:8081` .
 
-### 5. Connect to Relay Server
+### 5. Connect and test realtime-console
+Select `vad` mode and click `connect` to connect realtime-console to tensorstudio.\
+You should be able to see event logs without any errors if connection is established properly after authentication.\
+Note: disconnect after testing to avoid unnecessary consumption.
+<Frame>
+<img
+  className="block"
+  style={{ borderRadius: '15px' }}
+  src="/images/realtime_console_example.png"
+  alt="Hero Light"
+/>
+</Frame>
+
+## Start using Tensorstudio Speech API through NodeJS SDK
 
 #### Install NodeJS SDK
 ```bash
@@ -64,17 +77,6 @@ const client = new RealtimeClient({
   url: 'your-relay-server-url'
 });
 ```
-
-## Monitor relay-server
-You can monitor session events in your realtime-console running
-<Frame>
-<img
-  className="block"
-  style={{ borderRadius: '15px' }}
-  src="/images/realtime_console_example.png"
-  alt="Hero Light"
-/>
-</Frame>
 
 ## Production Deployment
 

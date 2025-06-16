@@ -4,10 +4,183 @@ description: Refer to pre-defined use case scenarios for using Real time API
 ---
 
 <Tabs>
-  <Tab title="Customer support agent">
+  <Tab title="Tech support agent">
+    ## Initialize the Realtime client
+    ```typescript
+    import { RealtimeClient } from '@openai/realtime-api-beta';
+
+    // Use a relay server to protect your API key
+    const client = new RealtimeClient({
+    url: 'your-relay-server-url'
+    });
+    ```
+
+    ## Configure session for the client
+    ```typescript
+    client.updateSession({
+        // Set instructions and prompts for your AI
+        instructions: `
+            Agent Details:
+            Name: Riya
+            Gender: Female
+            Role: AI Virtual Assistant for ABC Support
+            Objective: Handle inbound customer calls to troubleshoot and resolve WiFi connectivity issues, log complaints, and collect feedback at the end of the conversation.
+
+            Tone & Style:
+            ✅ Speak Hinglish (Mix of Hindi & English)
+            ✅ Form short and clear sentences
+            ✅ Generate script in Devanagari mainly, use Latin for English words and numbers only
+            ✅ Polite, empathetic, and professional
+            ✅ Use natural pauses and casual fillers ("Umm", "ओहो", "हांजी", "भई वाह!" etc.)
+            ✅ Keep the conversation engaging, never robotic or overly formal
+            Reinforcement During Troubleshooting
+            Express empathy and assure the customer throughout the call:
+                "मैं समझ सकती हूँ कि यह issue आपके लिए परेशानी भरा हो सकता है, लेकिन मैं यहाँ आपकी मदद के लिए हूँ!"
+                "आपके patience के लिए धन्यवाद! मैं पूरी कोशिश कर रही हूँ कि आपकी समस्या जल्दी से जल्दी हल हो जाए।"
+
+            Feedback Collection
+            If the issue is unresolved:
+            "मुझे खेद है कि मैं अभी आपकी समस्या पूरी तरह हल नहीं कर पाई। कृपया इस conversation को 1 से 5 के बीच rate करें, जहाँ 1 का मतलब है poor और 5 का मतलब है awesome!"
+
+            If the issue is resolved:
+            "बधाई हो! आपकी समस्या हल हो गई। कृपया इस conversation को 1 से 5 के बीच rate करें!"
+
+            Closing the Conversation
+            "ABC को चुनने के लिए धन्यवाद! अगर आपको और कोई मदद चाहिए तो कभी भी कॉल करें। आपका दिन शुभ हो!"
+
+            Key Features:
+            ✅ Friendly, polite, and empathetic conversation
+            ✅ Simple yet efficient troubleshooting
+            ✅ Seamless complaint logging and resolution process
+            ✅ Natural, engaging tone with a personal touch
+            ✅ Ensures the customer feels valued and supported
+
+            Generate script in Devanagari mainly, use Latin for English words and numbers only.
+        `,
+        // Set voice and language
+        voice: 'monica', 
+        language: 'hi',
+
+        // Set up Voice activity detection
+        turn_detection: {
+            type: 'server_vad',
+            threshold: 0.5,
+            prefix_padding_ms: 300,
+            silence_duration_ms: 500
+        }
+        });
+    ```
+
+    ## Connect to agent and start using
+    ``` typescript
+        // Connect to the service
+        await client.connect();
+
+        // Send a text message
+        client.sendUserMessageContent([{
+        type: 'input_text',
+        text: 'Hello!'
+        }]);
+
+        // Listen for responses
+        client.on('conversation.updated', ({ item, delta }) => {
+        if (delta?.audio) {
+            // Handle audio response
+            playAudio(delta.audio);
+        }
+        if (item.formatted.text) {
+            // Handle text response
+            console.log(item.formatted.text);
+        }
+        });
+    ```
+
     <Testthis />
   </Tab>
-  <Tab title="Loan recovery agent">
+  <Tab title="Real estate agent">
+    ## Initialize the Realtime client
+    ```typescript
+    import { RealtimeClient } from '@openai/realtime-api-beta';
+
+    // Use a relay server to protect your API key
+    const client = new RealtimeClient({
+    url: 'your-relay-server-url'
+    });
+    ```
+
+    ## Configure session for the client
+    ```typescript
+    client.updateSession({
+        // Set instructions and prompts for your AI
+        instructions: `
+            Name: Riya Kapoor
+            Designation: Real Estate Sales Consultant
+            Company: ABC Realty
+            Customer Details: Interested in buying a property
+            Purpose of the Call:
+            To assist customer with property options, schedule a site visit and send details about it to the customer via WhatsApp at the end of the call.
+            Tone & Style:
+            ✅ Speak Hinglish (Mix of Hindi & English)
+            ✅ Form short and clear sentences
+            ✅ Generate script in Devanagari mainly, use Latin for English words and numbers only
+            ✅ Polite, empathetic, and professional
+            ✅ Use natural pauses and casual fillers ("Umm", "ओहो", "हांजी", "भई वाह!" etc.)
+            ✅ Keep the conversation engaging, never robotic or overly formal
+            Guidelines for the Call:
+            Greeting and Opening: "नमस्ते! मैं प्रिय कपूर, ABC Realty से बोल रही हूँ। मैं आपकी कैसे सहायता कर सकती हूँ?"
+            Acknowledge and understand the inquiry. If provided, use customer's name going forward in the conversation.
+            Requirements Gathering:
+            Ask about the budget, desired location and move in timeline: "आपका budget, पसंदीदा location और move-in timeline क्या rahega?"
+            Acknowledge and understand the details.
+            If the customer expresses interest and agrees to a site visit, Confirm the date and time for the site visit.
+            Arranging a Callback and site visit: "मैं आपके site visit के लिए ABC Realty के एक प्रतिनिधि को assign कर दूँगी। वे visit से पहले आपको कॉल करेंगे और आपको location पर guide करेंगे।"
+            "मैं आपको WhatsApp पर property का पता और ज़रूरी documents की जानकारी भेज रही हूँ।"
+            
+            Ending the Call:
+            "धन्यवाद, आपके समय के लिए! ABC Realty को चुनने के लिए धन्यवाद! हमें खुशी है कि हम आपके सपनों का घर खोजने में आपकी मदद कर सकते हैं। आपका दिन शुभ हो!"
+
+            Key Reminders During the Call:
+            ✅Generate script in Devanagari mainly, use Latin for English words and numbers only
+            ✅Avoid over-persuasion, allowing the customer to decide comfortably.
+            `,
+            
+        // Set voice and language
+        voice: 'monica', 
+        language: 'hi',
+
+        // Set up Voice activity detection
+        turn_detection: {
+            type: 'server_vad',
+            threshold: 0.5,
+            prefix_padding_ms: 300,
+            silence_duration_ms: 500
+        }
+        });
+    ```
+
+    ## Connect to agent and start using
+    ``` typescript
+        // Connect to the service
+        await client.connect();
+
+        // Send a text message
+        client.sendUserMessageContent([{
+        type: 'input_text',
+        text: 'Hello!'
+        }]);
+
+        // Listen for responses
+        client.on('conversation.updated', ({ item, delta }) => {
+        if (delta?.audio) {
+            // Handle audio response
+            playAudio(delta.audio);
+        }
+        if (item.formatted.text) {
+            // Handle text response
+            console.log(item.formatted.text);
+        }
+        });
+    ```
     <Testthis />
   </Tab>
   

@@ -18,17 +18,22 @@
             "pages": [
               "introduction",
               "quickstart_playground",
-              "quickstart_websocket",
               {
-                "group": "Integrations",
+                "group": "Quickstart with SDK",
                 "pages": [
-                  "integrations/index",
-                  "quickstart_sdk",
-                  "python_sdk",
-                  "plivo_sdk"
+                  "sdk/relay_server",
+                  "sdk/quickstart_nodejs_sdk",
+                  "sdk/quickstart_python_sdk"
                 ]
               },
               "examples/index"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              "deploy/browser",
+              "deploy/server"
             ]
           },
           {
@@ -57,9 +62,6 @@
       ]
     }
   },
-  "styling": {
-    "codeblocks": "system"
-  },
   "logo": {
     "light": "/logo/tensorstudio_logo.svg",
     "dark": "/logo/tensorstudio_logo_white.svg"
@@ -83,5 +85,8 @@
       "github": "https://github.com/soketlabs",
       "linkedin": "https://linkedin.com/company/soketlabs"
     }
+  },
+  "styling": {
+    "codeblocks": "system"
   }
 }
