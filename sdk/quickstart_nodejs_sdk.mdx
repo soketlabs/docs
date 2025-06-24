@@ -82,68 +82,8 @@ client.on('conversation.updated', ({ item, delta }) => {
 });
 ```
 
-## Key Features
-
-### Audio Handling
-```typescript
-// Stream audio input from microphone
-const wavRecorder = new WavRecorder({ sampleRate: 8000 });
-await wavRecorder.record((data) => {
-  client.appendInputAudio(data.mono);
-});
-
-// Handle audio responses
-client.on('conversation.updated', ({ delta }) => {
-  if (delta?.audio) {
-    const audioPlayer = new WavStreamPlayer({ sampleRate: 8000 });
-    audioPlayer.add16BitPCM(delta.audio);
-  }
-});
-
-// Configure VAD (Voice Activity Detection)
-client.updateSession({
-  turn_detection: {
-    type: 'server_vad',
-    threshold: 0.5,
-    prefix_padding_ms: 300,
-    silence_duration_ms: 500
-  }
-});
-```
-
-### Voice Settings
-```typescript
-// Change voice and language
-client.updateSession({
-  voice: 'monica',  // Set voice
-  language: 'en'    // Set language
-});
-```
-
-### Tool Integration
-```typescript
-// Add a custom tool
-client.addTool(
-  {
-    name: 'get_weather',
-    description: 'Get weather for location',
-    parameters: {
-      type: 'object',
-      properties: {
-        location: {
-          type: 'string',
-          description: 'City name'
-        }
-      },
-      required: ['location']
-    }
-  },
-  async ({ location }) => {
-    // Tool implementation
-    return { temperature: 72, conditions: 'sunny' };
-  }
-);
-```
+### AI conversation agent Example
+Try [this](/introduction) example in colab to quickly start conversaing with a custom AI agent.
 
 ## Next Steps
 - Explore [Tool Calling](/concepts/tool_calling) for extended functionality

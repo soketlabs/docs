@@ -20,46 +20,18 @@ npm install
 Create a `.env` file in realtime-console directory
 ```bash
 OPENAI_API_KEY=<your-api-key>
-REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
 ```
 
-### 3. Start realtime-console
-```bash
-cd realtime-console
-npm run start
-```
-This will start realtime-console in `port:3005` by default. \
-Change port:  `PORT=<your port>` in `package.json{}` file in realtime-console directory.
-<Frame>
-<img
-  className="block"
-  style={{ borderRadius: '15px' }}
-  src="/images/realtime_console_port.png"
-  alt="Hero Light"
-/>
-</Frame>
-
-### 4. Start the Relay Server
+### 3. Start the Relay Server
 Run relay server in a new terminal:
 
 ```bash
 cd realtime-console
 npm run relay
 ```
-The relay server will start running on `REACT_APP_LOCAL_RELAY_SERVER_URL` that you have set, in this case `ws://localhost:8081` .
+The relay server will start running on `ws://localhost:8081` .
 
-### 5. Connect and test realtime-console
-Select `vad` mode and click `connect` to connect realtime-console to tensorstudio.\
-You should be able to see event logs without any errors if connection is established properly after authentication.\
-Note: disconnect after testing to avoid unnecessary consumption.
-<Frame>
-<img
-  className="block"
-  style={{ borderRadius: '15px' }}
-  src="/images/realtime_console_example.png"
-  alt="Hero Light"
-/>
-</Frame>
+
 
 ## Start using Tensorstudio Speech API through NodeJS SDK
 

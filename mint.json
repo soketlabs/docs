@@ -66,8 +66,7 @@
     {
       "group": "Deployment",
       "pages": [
-        "deploy/browser",
-        "deploy/server",
+        "deploy/in_depth_sdk",
         "deploy/relay_server",
         {
           "group": "Integrations",
@@ -84,7 +83,8 @@
       "pages": [
         "concepts/vad",
         "concepts/tool_calling",
-        "concepts/voice"
+        "concepts/voice",
+        "concepts/realtime_console"
       ]
     }
   ],

@@ -1,0 +1,50 @@
+---
+title: 'Realtime Console' 
+description: 'Deploy interactive console to integrate with your web app'
+---
+
+### 1. Install Realtime Console
+
+First, install the OpenAI Realtime Console globally:
+
+```bash
+git clone https://github.com/soketlabs/realtime-console.git
+cd realtime-console
+npm install
+```
+### 2. Set environment variables for realtime-console
+Create a `.env` file in realtime-console directory
+```bash
+OPENAI_API_KEY=<your-api-key>
+REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
+```
+
+### 3. Start realtime-console
+```bash
+cd realtime-console
+npm run start
+```
+
+This will start realtime-console in `port:3005` by default. \
+Change port:  `PORT=<your port>` in `package.json{}` file in realtime-console directory.
+<Frame>
+<img
+  className="block"
+  style={{ borderRadius: '15px' }}
+  src="/images/realtime_console_port.png"
+  alt="Hero Light"
+/>
+</Frame>
+
+### 5. Connect and test realtime-console
+Select `vad` mode and click `connect` to connect realtime-console to tensorstudio.\
+You should be able to see event logs without any errors if connection is established properly after authentication.\
+Note: disconnect after testing to avoid unnecessary consumption.
+<Frame>
+<img
+  className="block"
+  style={{ borderRadius: '15px' }}
+  src="/images/realtime_console_example.png"
+  alt="Hero Light"
+/>
+</Frame>
