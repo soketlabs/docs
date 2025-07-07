@@ -52,6 +52,7 @@
       "pages": [
         "introduction",
         "quickstart_playground",
+        "quickstart_websocket",
         {
           "group": "Quickstart with SDK",
           "pages": [

@@ -1,12 +1,9 @@
 ---
-title: Quickstart with Python SDK
+title: # ⚡ Quickstart with Python SDK
 description: Get started quickly with the Realtime Python SDK
 ---
 
-import Tabs from '@theme/Tabs'
-import TabItem from '@theme/TabItem'
 
-# ⚡ Quickstart – Python SDK
 
 This guide helps you get started with the **Realtime Python SDK** to send and receive messages via the Realtime API.
 
@@ -19,4 +16,56 @@ git clone https://github.com/soketlabs/realtime-sdk-python.git
 cd realtime-sdk-python
 pip install .
 ```
-### Updating...
+
+## 🚀 Basic Usage
+
+Below is a minimal example to connect, send a message, and receive responses using the Python SDK.  
+This example is adapted from [`connect.py`](https://github.com/soketlabs/realtime-sdk-python/blob/main/connect.py).
+
+```python
+import os
+from realtime.client import RealtimeClient
+
+# Set your API key (recommended: use environment variable)
+API_KEY = os.environ.get("TENSOR_STUDIO_API_KEY")
+
+client = RealtimeClient(
+    api_key=API_KEY,
+)
+
+# Change language and voice settings
+client.update_session(
+    voice="monica",
+    language="en",
+)
+
+def on_response(event):
+    print("Received:", event)
+
+# Register a callback for responses
+client.on("conversation.updated", on_response)
+
+# Connect to the service
+await client.connect()
+
+# Send a text message
+client.send_user_message_content(
+    content = [{
+        "type": "text",
+        "text": "Hello, this is a test message from the Realtime API!"
+    }]
+)
+
+
+```
+
+## 🛠️ More Examples
+
+- See the [connect.py example](https://github.com/soketlabs/realtime-sdk-python/blob/main/connect.py) for a full script.
+- Explore advanced features like tool-calling and VAD in the [Realtime SDK Python repo](https://github.com/soketlabs/realtime-sdk-python/tree/main).
+
+## 🔗 Next Steps
+
+- Explore [Tool Calling](/concepts/tool_calling) for extended functionality
+- Learn about [Voice Activity Detection](/concepts/vad) for better speech interaction
+- Check out available [Voices](/concepts/voice) for your application
