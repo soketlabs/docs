@@ -51,31 +51,23 @@
       "group": "Get Started",
       "pages": [
         "introduction",
-        "quickstart_playground",
-        "quickstart_websocket",
-        {
-          "group": "Quickstart with SDK",
-          "pages": [
-            "sdk/overview",
-            "sdk/quickstart_nodejs_sdk",
-            "sdk/quickstart_python_sdk"
-          ]
-        }, 
-        "examples/index"
+        "apis",
+        "quickstart_playground"
       ]
     },
     {
       "group": "Deployment",
       "pages": [
-        "deploy/in_depth_sdk",
-        "deploy/relay_server",
         {
-          "group": "Integrations",
+          "group": "SDKs Guide",
           "pages": [
-            "integrations/index",
-            "plivo_sdk" 
+            "sdk/overview",
+            "sdk/quickstart_python_sdk",
+            "sdk/quickstart_nodejs_sdk"
           ]
-        }
+        },
+        "deploy/relay_server",
+        "integrations/index"
       ]
     },
   
@@ -85,6 +77,7 @@
         "concepts/vad",
         "concepts/tool_calling",
         "concepts/voice",
+        "concepts/quickstart_websocket",
         "concepts/realtime_console"
       ]
     }

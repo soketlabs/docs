@@ -1,5 +1,5 @@
 ---
-title: 'Quickstart with NodeJS SDK'
+title: 'NodeJS SDK'
 description: 'Get started with the Realtime Speech API SDK in minutes'
 ---
 
@@ -72,7 +72,9 @@ client.sendUserMessageContent([{
 // Listen for responses
 client.on('conversation.updated', ({ item, delta }) => {
   if (delta?.audio) {
-    // Handle audio response
+    // `delta.audio` contains raw audio chunks (typically in binary or base64 format).
+    // You need to implement the `playAudio` function to handle playback,
+    // e.g., using Web Audio API or any audio player of your choice.
     playAudio(delta.audio);
   }
   if (item.formatted.text) {
@@ -82,10 +84,11 @@ client.on('conversation.updated', ({ item, delta }) => {
 });
 ```
 
-### AI conversation agent Example
-Try [this example script](https://github.com/soketlabs/openai-realtime-api-beta/blob/main/examples/node_devenv.mjs) to quickly test and start conversing with a custom AI agent.
+[//]: # "AI conversation agent Example"
 
-## Next Steps
+"Try [this example script](https://github.com/soketlabs/openai-realtime-api-beta/blob/main/examples/node_devenv.mjs) to quickly test and start conversing with a custom AI agent."
+
+
 - Explore [Tool Calling](/concepts/tool_calling) for extended functionality
 - Learn about [Voice Activity Detection](/concepts/vad) for better speech interaction
 - Check out available [Voices](/concepts/voice) for your application

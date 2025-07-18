@@ -1,1 +1,5 @@
-{}
+{
+  "dependencies": {
+    "mintlify": "^4.2.23"
+  }
+}
