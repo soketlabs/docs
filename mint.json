@@ -51,17 +51,34 @@
       "group": "Get Started",
       "pages": [
         "introduction",
-        "quickstart_playground",  
-        "quickstart_websocket",
-        "quickstart_sdk"
+        "apis",
+        "quickstart_playground"
       ]
     },
+    {
+      "group": "Deployment",
+      "pages": [
+        {
+          "group": "SDKs Guide",
+          "pages": [
+            "sdk/overview",
+            "sdk/quickstart_python_sdk",
+            "sdk/quickstart_nodejs_sdk"
+          ]
+        },
+        "deploy/relay_server",
+        "integrations/index"
+      ]
+    },
+  
     {
       "group": "Concepts",
       "pages": [
         "concepts/vad",
         "concepts/tool_calling",
-        "concepts/voice"
+        "concepts/voice",
+        "concepts/quickstart_websocket",
+        "concepts/realtime_console"
       ]
     }
   ],

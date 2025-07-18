@@ -1,0 +1,94 @@
+---
+title: 'NodeJS SDK'
+description: 'Get started with the Realtime Speech API SDK in minutes'
+---
+
+## Installation
+
+Install the SDK using npm:
+
+```bash
+npm install https://github.com/soketlabs/openai-realtime-api-beta
+```
+
+## Creating a Client
+
+```typescript
+import { RealtimeClient } from '@openai/realtime-api-beta';
+
+const client = new RealtimeClient({
+  apiKey: 'your-api-key',
+  // For browser environments, set this to true
+  /* Warning: Use only in development or testing — exposes your API key */
+  dangerouslyAllowAPIKeyInBrowser: true 
+});
+
+// Or use a relay server to protect your API key
+const client = new RealtimeClient({
+  url: 'your-relay-server-url'
+});
+```
+
+Refer to [Relay Server Guide](/deploy/relay_server) to set up and use a relay server.
+
+## Session Configuration
+
+After creating the client, you can set instructions for your AI agent, configure various session parameters:
+
+```typescript
+// Configure the session with multiple parameters
+client.updateSession({
+  // Set system instructions for the AI
+  instructions: 'You are a helpful assistant',
+  
+  // Set voice and language
+  voice: 'monica',
+  language: 'en',
+  
+  // Set up Voice Activity Detection
+  turn_detection: {
+    type: 'server_vad',
+    threshold: 0.5,
+    prefix_padding_ms: 300,
+    silence_duration_ms: 500
+  }
+});
+```
+
+## Basic Usage
+
+### Connect and Send Messages
+
+```typescript
+// Connect to the service
+await client.connect();
+
+// Send a text message
+client.sendUserMessageContent([{
+  type: 'input_text',
+  text: 'Hello!'
+}]);
+
+// Listen for responses
+client.on('conversation.updated', ({ item, delta }) => {
+  if (delta?.audio) {
+    // `delta.audio` contains raw audio chunks (typically in binary or base64 format).
+    // You need to implement the `playAudio` function to handle playback,
+    // e.g., using Web Audio API or any audio player of your choice.
+    playAudio(delta.audio);
+  }
+  if (item.formatted.text) {
+    // Handle text response
+    console.log(item.formatted.text);
+  }
+});
+```
+
+[//]: # "AI conversation agent Example"
+
+"Try [this example script](https://github.com/soketlabs/openai-realtime-api-beta/blob/main/examples/node_devenv.mjs) to quickly test and start conversing with a custom AI agent."
+
+
+- Explore [Tool Calling](/concepts/tool_calling) for extended functionality
+- Learn about [Voice Activity Detection](/concepts/vad) for better speech interaction
+- Check out available [Voices](/concepts/voice) for your application
