@@ -29,6 +29,8 @@ from loguru import logger
 from realtime.client import RealtimeClient
 import os
 from connect import ConversationHandler, AudioManager, audio_recorder
+from dotenv import load_dotenv
+load_dotenv()
 
 # Initialize the OpenAI client
 client = RealtimeClient(
@@ -46,8 +48,8 @@ client.on("conversation.item.completed", conversation_handler.on_conversation_it
 client.on("error", conversation_handler.on_error)
 client.on("conversation.interrupted", conversation_handler.on_conversation_interrupted)
 
-
 async def main():
+    recorder_task = None
     try:
         await client.connect()
         await client.update_session(
@@ -56,7 +58,7 @@ async def main():
                 ''',
                 turn_detection = {
                     "type": "server_vad",
-                    "threshold": 0.5,
+                    "threshold": 0.2,
                     "prefix_padding_ms": 300,
                     "silence_duration_ms": 1000,
                 }
@@ -90,7 +92,7 @@ async def main():
         await audio_manager.shutdown()
 
         # Cancel recorder_task if it's still running
-        if not recorder_task.done():
+        if recorder_task and not recorder_task.done():
             recorder_task.cancel()
             try:
                 await recorder_task
