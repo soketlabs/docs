@@ -10,17 +10,23 @@ Click on `Use this template` to copy the Mintlify starter kit. The starter kit c
 
 ### Development
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the documentation changes locally. To install, use the following command
+Install the [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the documentation changes locally. This project includes Mintlify as a local dependency, so use the pinned Node version in `.nvmrc`.
 
 ```
-npm i -g mintlify
+nvm install 24
+nvm use 24
+npm install
+npm run dev
 ```
 
-Run the following command at the root of your documentation (where mint.json is)
+If you prefer a global CLI install, use a supported Node version (Node 24 is recommended):
 
 ```
+npm i -g mintlify@latest
 mintlify dev
 ```
+
+If you hit a Node 25 compatibility error, downgrade to Node 24 or another active LTS release.
 
 ### Publishing Changes
 

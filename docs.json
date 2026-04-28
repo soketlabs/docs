@@ -1,0 +1,94 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "TensorStudio - Soket AI Labs",
+  "colors": {
+    "primary": "#444444",
+    "light": "#ffffff",
+    "dark": "#111111"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "apis",
+              "quickstart_playground"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              {
+                "group": "SDKs Guide",
+                "pages": [
+                  "sdk/overview",
+                  "sdk/quickstart_python_sdk",
+                  "sdk/quickstart_nodejs_sdk"
+                ]
+              },
+              "deploy/relay_server",
+              "integrations/index"
+            ]
+          },
+          {
+            "group": "Concepts",
+            "pages": [
+              "concepts/vad",
+              "concepts/tool_calling",
+              "concepts/voice",
+              "concepts/quickstart_websocket",
+              "concepts/realtime_console"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Community",
+          "href": "https://discord.gg/regKDRrpYE",
+          "icon": "discord"
+        },
+        {
+          "anchor": "Blog",
+          "href": "https://soket.ai/blogs/pragna_1b",
+          "icon": "blog"
+        }
+      ]
+    }
+  },
+  "styling": {
+    "codeblocks": "system"
+  },
+  "logo": {
+    "light": "/logo/tensorstudio_logo.svg",
+    "dark": "/logo/tensorstudio_logo_white.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:help@tensorstudio.ai"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Platform",
+      "href": "https://app.tensorstudio.ai/signin"
+    }
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/soketlabs",
+      "github": "https://github.com/soketlabs",
+      "linkedin": "https://linkedin.com/company/soketlabs"
+    }
+  }
+}

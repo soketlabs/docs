@@ -48,7 +48,13 @@
   ],
   "navigation": [
     {
-      "group": "Get Started",
+      "group": "Dhrith ASR",
+      "pages": [
+        "dhrith/dhrith_quickstart"
+      ]
+    },
+    {
+      "group": "Speech API",
       "pages": [
         "introduction",
         "apis",
