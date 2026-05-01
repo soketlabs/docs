@@ -16,7 +16,8 @@
           {
             "group": "Dhrith",
             "pages": [
-              "dhrith/introduction"
+              "dhrith/introduction",
+              "dhrith/evaluation-and-benchmarking"
             ]
           },
           {

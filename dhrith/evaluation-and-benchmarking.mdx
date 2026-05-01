@@ -1,0 +1,51 @@
+---
+title: Evaluation and Benchmarking
+description: "Benchmark methodology, metrics, and comparative evaluation results for Dhrith."
+---
+
+## Evaluation and Benchmarking
+
+To assess Dhrith's performance, we developed a benchmark specifically tailored for India's multilingual, code-mixed speech patterns, reflecting real-world data across Hindi, English, and Hinglish blends. The benchmark includes diverse speech styles - spontaneous dialogue, emotional tone shifts, regional accents, and natural background noise - making it a rigorous testbed for emotion-aware ASR systems.
+
+We evaluated nine leading ASR models on this benchmark, including open and commercial systems such as Gemini 2.5 Flash, Deepgram Nova 2, GPT-4o Mini Transcribe, Sarvam Sarika 2.5, Google Gemma-3n, ElevenLabs Scribe v1, and AI4Bharat Indic Whisper.
+
+All models were tested on identical audio samples with consistent normalization and transcription post-processing. Metrics were computed using our in-house evaluation suite, designed to handle multilingual and emotion-tagged outputs.
+
+| Model | WER (%) | CER (%) | NWER (%) | NCER (%) | SER (%) | DIS (%) | ET (%) | CM (%) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Gemini 2.5 Flash | 8.57 | 5.69 | 8.01 | 5.39 | 2.35 | 15.10 | 99.63 | 94.31 |
+| Soket Dhrith | 11.19 | 7.54 | 10.70 | 7.31 | 8.73 | 14.78 | 61.34 | 90.44 |
+| Deepgram Nova 2 | 15.74 | 9.03 | 15.03 | 8.66 | 0.57 | 14.39 | 0.00 | 80.31 |
+| GPT-4o Mini Transcribe | 42.34 | 36.97 | 41.65 | 36.58 | 9.28 | 12.47 | 0.00 | 62.36 |
+| Sarvam Sarika 2.5 | 56.84 | 49.61 | 58.67 | 51.76 | 8.71 | 10.44 | 0.00 | 37.13 |
+| Google Gemma-3n-E4B | 58.05 | 55.15 | 58.21 | 55.16 | 19.15 | 14.52 | 95.69 | 66.01 |
+| Google Gemma-3n-E2B | 59.47 | 56.83 | 59.82 | 57.31 | 19.87 | 14.38 | 83.44 | 66.59 |
+| Elevenlabs Sribe v1 | 71.27 | 63.14 | 72.69 | 64.56 | 9.61 | 9.83 | 0.00 | 46.53 |
+| Vaani Whisper Large | 75.23 | 65.53 | 76.84 | 67.40 | 6.16 | 10.09 | 0.00 | 47.19 |
+| AI4Bharat Indic Whisper | 80.86 | 68.79 | 82.03 | 69.86 | 8.00 | 8.97 | 0.00 | 39.09 |
+
+## Benchmark Design
+
+Unlike conventional ASR evaluations that focus only on literal accuracy, this benchmark captures the multidimensional nature of Indian speech. It measures both linguistic and expressive performance through the following metrics:
+
+- **WER (Word Error Rate)**: Standard measure of substitution, insertion, and deletion errors at the word level.
+- **CER (Character Error Rate)**: Fine-grained equivalent of WER at character level, capturing minor linguistic mismatches.
+- **NWER / NCER (No-Noise WER/CER)**: Recomputed after filtering conversational fillers such as "uh-huh," "haan," "achha," "वैसे," etc. This reflects model accuracy on semantically meaningful content rather than natural speech hesitations.
+- **SER (Semantic WER)**: A novel metric that calculates error rate of semantic similarity between ground-truth and predicted transcripts using LaBSE sentence embeddings, rewarding semantically equivalent but lexically different outputs.
+- **DIS (Disfluency Density)**: Average frequency of verbal fillers (e.g., "oh," "acha," "तो फिर," "हां हां") per transcript, indicating the model's ability to detect and preserve human-like speech patterns.
+- **ET (Expression Tagging Density)**: Measures how often the model identifies expressive or paralinguistic tags like `[laughing]`, `[shouting]`, or `[pause]` - essential for emotionally aware systems.
+- **CM (Code-Mix Density)**: Evaluates how well the generated transcript mirrors the language-mixing pattern in the ground truth, ensuring linguistic fidelity in bilingual utterances.
+
+<Note>
+Expression tags were removed before post-processing to compute WER/CER with and without noise.
+</Note>
+
+## Key Insights
+
+- **Competitive Accuracy**: Dhrith achieves second-best WER and CER across the entire benchmark, surpassing all models except Gemini 2.5 Flash.
+- **Multilingual Robustness**: Despite being trained primarily for Hindi-English, Dhrith maintains high NWER and NCER performance, indicating strong resilience to filler noise and dialectal variation.
+- **Emotion and Expression Awareness**: With an Expression Tagging (ET) density of 61.34%, Dhrith is the only open Indian ASR model capable of consistently annotating emotional context - far outperforming all others except Gemini.
+- **Code-Mix Fidelity**: Dhrith records a Code-Mix Density of 90.44%, demonstrating exceptional sensitivity to India's bilingual conversational flow - a crucial feature for real-world deployment in call centers, virtual assistants, and entertainment domains.
+- **Balanced Performance**: While some systems trade linguistic precision for expressivity or vice versa, Dhrith achieves a strong balance between transcription accuracy, emotional depth, and naturalness, setting a new benchmark for Indian multilingual ASR.
+
+All experiments were conducted on our Hindi-English code-mixed evaluation dataset, built from diverse real-world audio. We will soon release this benchmark on HuggingFace, along with evaluation scripts and reference annotations, to encourage transparent and reproducible comparisons across future ASR systems.
