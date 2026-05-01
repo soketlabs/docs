@@ -14,6 +14,12 @@
         "tab": "Documentation",
         "groups": [
           {
+            "group": "Dhrith",
+            "pages": [
+              "dhrith/introduction"
+            ]
+          },
+          {
             "group": "Get Started",
             "pages": [
               "introduction",
@@ -44,6 +50,23 @@
               "concepts/voice",
               "concepts/quickstart_websocket",
               "concepts/realtime_console"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Dhrith ASR",
+            "pages": [
+              "api-reference/introduction",
+              "api-reference/endpoint/post-batch",
+              "api-reference/endpoint/get-status-job-id",
+              "api-reference/endpoint/get-status-batch-batch-id",
+              "api-reference/endpoint/get-results-batch-batch-id",
+              "api-reference/endpoint/get-results-file-file-id",
+              "api-reference/endpoint/get-download-batch-batch-id"
             ]
           }
         ]

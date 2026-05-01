@@ -20,7 +20,19 @@
   },
   "topbarLinks": [
     {
-      "name": "Support",
+      "name": "Explore",
+      "url": "/explore"
+    },
+    {
+      "name": "Resources",
+      "url": "/resources"
+    },
+    {
+      "name": "Company",
+      "url": "/company"
+    },
+    {
+      "name": "Contact support",
       "url": "mailto:help@tensorstudio.ai"
     }
   ],
@@ -30,35 +42,41 @@
   },
   "tabs": [
     {
+      "name": "Documentation",
+      "url": "index"
+    },
+    {
       "name": "API Reference",
-      "url": "api-reference"
+      "url": "api-reference/introduction"
     }
   ],
   "anchors": [
     {
-      "name": "Community",
-      "icon": "discord",
-      "url": "https://discord.gg/regKDRrpYE"
+      "name": "Feature Requests",
+      "icon": "message-circle",
+      "url": "https://github.com/soketlabs"
     },
     {
-      "name": "Blog",
-      "icon": "blog",
-      "url": "https://soket.ai/blogs/pragna_1b"
+      "name": "Status",
+      "icon": "activity",
+      "url": "https://status.tensorstudio.ai"
     }
   ],
   "navigation": [
     {
-      "group": "Dhrith ASR",
+      "group": "Documentation",
       "pages": [
-        "dhrith/dhrith_quickstart"
-      ]
-    },
-    {
-      "group": "Speech API",
-      "pages": [
+        "index",
+        "dhrith/dhrith_quickstart",
         "introduction",
         "apis",
         "quickstart_playground"
+      ]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "api-reference/introduction"
       ]
     },
     {

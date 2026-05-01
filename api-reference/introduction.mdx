@@ -1,33 +1,61 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "Dhrith ASR"
+description: "Submit audio batches, monitor transcription progress, and fetch merged results."
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+Use this API to:
 
-## Welcome
+- Submit files and/or audio URLs in one batch request.
+- Track progress at job level or batch level.
+- Retrieve merged per-file transcripts.
+- Download large result sets as NDJSON/JSON.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+## Getting started
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+### Authentication
 
-## Authentication
+Start by creating [API Keys](/apis).
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All production endpoints are JWT-protected and require:
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+```bash
+Authorization: Bearer <JWT_TOKEN>
 ```
+
+Use your generated API key as `Bearer JWT_TOKEN`.
+
+### IDs you will use
+
+- `batch_id`: groups everything from one submission.
+- `job_id`: parent job ID returned at submit time.
+- `file_id`: stable ID for one source file/URL and its merged result.
+
+## Features and Metrics
+
+### Core features
+
+- **Batch input support**: local file uploads and remote audio URLs in one request.
+- **Chunk-aware processing**: long files are processed in chunks and merged into one transcript.
+- **File-level aggregation**: returns per-file status and merged transcript output.
+- **Streaming exports**: download full batch results as NDJSON (recommended for large batches) or JSON array.
+
+### Operational metrics exposed by API responses
+
+- Submission estimates:
+  - `estimated_audio_seconds` - Estimated audio workload duration
+  - `estimated_completion_seconds` - Estimated completion time
+- Batch progress counters:
+  - `total_files`, `total_jobs`
+  - `completed_jobs`, `failed_jobs`, `processing_jobs`, `queued_jobs`
+  - `files_completed`, `files_failed`, `files_processing`
+
+### Default pagination behavior
+
+- `results` endpoint default parameters:
+  - `page=1`
+  - `limit=50`
+  - max `limit=200`
+
+## Endpoints and Usage
+
+Base URL examples below use `http://localhost:8000`. Replace with your deployed host in production.

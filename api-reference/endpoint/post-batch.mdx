@@ -1,0 +1,50 @@
+---
+openapi: "POST /batch"
+---
+
+Submit one batch with:
+
+- `files`: multipart file fields (optional)
+- `audio_urls`: JSON array string in multipart form (optional)
+
+At least one of `files` or `audio_urls` is required.
+
+## Example (files + URLs)
+
+```bash
+curl -X POST "http://localhost:8000/batch" \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -F "files=@/absolute/path/audio1.wav" \
+  -F "files=@/absolute/path/audio2.mp3" \
+  -F 'audio_urls=["https://example.com/audio3.wav","https://example.com/audio4.mp3"]'
+```
+
+## Typical response
+
+```json
+{
+  "batch_id": "0f8fad5b-d9cb-469f-a165-70867728950e",
+  "total_jobs": 4,
+  "estimated_audio_seconds": 290.0,
+  "estimated_completion_seconds": 21.7,
+  "jobs": [
+    {
+      "job_id": "2f5bb6b9-7f5d-4d61-a8f8-48e8f8f1f22d",
+      "rq_job_id": "6f5d8f11-b0c3-44f2-9600-2f4efbe7f8f7",
+      "batch_id": "0f8fad5b-d9cb-469f-a165-70867728950e",
+      "file_id": "1374132b-b5db-4ec3-9cf1-f61f982e89b0",
+      "type": "gcs_file",
+      "filename": "audio1.wav",
+      "status": "queued"
+    }
+  ]
+}
+```
+
+Other endpoints now have dedicated pages in the Dhrith ASR API sidebar:
+
+- `GET /status/{job_id}`
+- `GET /status/batch/{batch_id}`
+- `GET /results/batch/{batch_id}`
+- `GET /results/file/{file_id}`
+- `GET /download/batch/{batch_id}`
