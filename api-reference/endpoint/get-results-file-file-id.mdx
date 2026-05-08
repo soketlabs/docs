@@ -1,3 +1,24 @@
 ---
 openapi: "GET /results/file/{file_id}"
 ---
+
+Returns merged transcript and status for one file.
+
+## Query params
+
+- `chunks` (optional bool): include per-chunk details
+
+## Example
+
+```bash
+curl -X GET "http://localhost:8000/results/file/$FILE_ID?chunks=true" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```
+
+## Typical response shape
+
+- Found file: `{ file_id, filename, status, result?, errors?, chunk_results? }`
+- Not found: `{ "error": "file not found" }`
+
+In development mode, additional counters may be included:
+`total_chunks`, `completed_chunks`, and `failed_chunks`.

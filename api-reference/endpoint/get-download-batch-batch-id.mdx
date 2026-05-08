@@ -1,3 +1,28 @@
 ---
 openapi: "GET /download/batch/{batch_id}"
 ---
+
+Downloads all results for a batch as a stream.
+
+## Query params
+
+- `status` (optional)
+- `format` (default: `ndjson`): `ndjson` or `json`
+- `raw` (default: `false`): return raw per-job records instead of merged per-file results
+- `chunks` (optional bool): include chunk payloads in merged output
+
+## Example (NDJSON export)
+
+```bash
+curl -L -o "batch_results.ndjson" \
+  "http://localhost:8000/download/batch/$BATCH_ID?format=ndjson" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```
+
+## Example (JSON export with filter)
+
+```bash
+curl -L -o "batch_completed.json" \
+  "http://localhost:8000/download/batch/$BATCH_ID?status=completed&format=json" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```

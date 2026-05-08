@@ -41,10 +41,5 @@ curl -X POST "http://localhost:8000/batch" \
 }
 ```
 
-Other endpoints now have dedicated pages in the Dhrith ASR API sidebar:
-
-- `GET /status/{job_id}`
-- `GET /status/batch/{batch_id}`
-- `GET /results/batch/{batch_id}`
-- `GET /results/file/{file_id}`
-- `GET /download/batch/{batch_id}`
+In development mode, each `jobs[]` item may additionally include internal fields such as
+`job_id`, `rq_job_id`, `type`, and `estimated_audio_seconds`.

@@ -1,0 +1,12 @@
+---
+openapi: "GET /protected"
+---
+
+Returns token-derived identity and limits for verification.
+
+## Example
+
+```bash
+curl -X GET "http://localhost:8000/protected" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```

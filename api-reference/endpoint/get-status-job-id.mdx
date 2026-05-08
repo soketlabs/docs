@@ -1,3 +1,18 @@
 ---
 openapi: "GET /status/{job_id}"
 ---
+
+Returns one job status or result document.
+
+- If the job is already persisted in MongoDB, the full stored job document is returned.
+- If still in queue/memory, in-flight metadata is returned (with RQ status when available).
+- If not found, response is `{ "error": "not found" }`.
+
+`job_id` is commonly available in development/internal flows. For production integrations, prefer tracking by `batch_id` and `file_id`.
+
+## Example
+
+```bash
+curl -X GET "http://localhost:8000/status/$JOB_ID" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```
