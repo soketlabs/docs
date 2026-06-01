@@ -3,28 +3,25 @@ title: Dhrith ASR API
 description: Submit audio batches, monitor transcription progress, and fetch merged results from the Dhrith ASR API server.
 ---
 
-# Dhrith ASR API
 
-The Dhrith ASR API is a batch transcription service built on FastAPI + Redis Queue (RQ) + MongoDB, with ASR inference handled by LitServe.
+
+## Welcome
+
+The Dhrith ASR API is a batch transcription service for Indian multilingual speech. Submit audio files or URLs, track processing progress, and retrieve merged transcripts at scale.
 
 Use this API to:
 
 - Submit files and/or audio URLs in one batch request.
-- Track progress at batch level (and job level when `job_id` is available).
-- Retrieve merged per-file transcripts (or raw job records).
-- Download large result sets as NDJSON/JSON.
-- Check queue and inference-service health for operations.
+- Track progress at batch level (and file job level when `job_id` is available).
 
-If you are new to the TensorStudio docs flow, start from the [Playground quickstart](https://docs.tensorstudio.ai/quickstart_playground).
+If you are new to the TensorStudio docs flow, start from the [API Keys](https://docs.tensorstudio.ai/apis).
 
 ## 1) Dhrith ASR Overview
 
 ### Processing flow
 
 1. Client sends `POST /batch` with files and/or `audio_urls`.
-2. API streams uploaded files to storage and enqueues parent jobs in Redis.
-3. Workers split and process audio chunks, call LitServe ASR, and persist progress/results in MongoDB.
-4. Client polls status endpoints or fetches paginated/downloadable results.
+2. Client polls status endpoints or fetches paginated/downloadable results.
 
 ### Authentication
 
@@ -34,24 +31,17 @@ Application endpoints require JWT and expect:
 
 The token is validated against JWKS. Missing or invalid tokens return `401`.
 
-Health endpoints (`GET /health/queues`, `GET /health/inference`) are intended for operational checks and are available without JWT.
-
 ### IDs you will use
 
 - `batch_id`: groups everything from one submission.
-- `job_id`: parent job ID returned at submit time.
+- `job_id`: file job ID returned at submit time.
 - `file_id`: stable ID for one source file/URL and its merged result.
-- `rq_job_id`: Redis queue job identifier for internal tracking.
 
 ## 2) Features and Metrics
 
 ### Core features
 
 - **Batch input support**: local file uploads and remote audio URLs in one request.
-- **Chunk-aware processing**: long files are processed in chunks and merged into one transcript.
-- **File-level aggregation**: returns per-file status and merged transcript output.
-- **Streaming exports**: download full batch results as NDJSON (recommended for large batches) or JSON array.
-- **Queue health API**: exposes queue depth and LitServe concurrency occupancy for autoscaling/ops.
 
 ### Operational metrics exposed by API responses
 
@@ -62,9 +52,6 @@ Health endpoints (`GET /health/queues`, `GET /health/inference`) are intended fo
   - `total_files`, `total_jobs`
   - `completed_jobs`, `failed_jobs`, `processing_jobs`, `queued_jobs`
   - `files_completed`, `files_failed`, `files_processing`
-- Queue health telemetry (`GET /health/queues`):
-  - queue depth + max depth for file/job/retry queues
-  - semaphore `inflight`, `capacity`, `available`, `saturated`
 
 ### Default pagination behavior
 
@@ -75,38 +62,7 @@ Health endpoints (`GET /health/queues`, `GET /health/inference`) are intended fo
 
 ## 3) Endpoints and Usage
 
-Base URL examples below use `http://localhost:8000`. Replace with your deployed host in production.
-
-## `GET /protected`
-
-Returns token-derived identity and limits for verification.
-
-### Example
-
-```bash
-curl -X GET "http://localhost:8000/protected" \
-  -H "Authorization: Bearer $JWT_TOKEN"
-```
-
-## `GET /health/queues`
-
-Operational health snapshot of queue depth and LitServe semaphore occupancy.
-
-### Example
-
-```bash
-curl -X GET "http://localhost:8000/health/queues"
-```
-
-## `GET /health/inference`
-
-Connectivity check for the inference service used by workers.
-
-### Example
-
-```bash
-curl -X GET "http://localhost:8000/health/inference"
-```
+Base URL examples below use `https://api.soket.ai/transcribe`.
 
 ## `POST /batch`
 
@@ -120,7 +76,7 @@ At least one of `files` or `audio_urls` is required.
 ### Example (files + URLs)
 
 ```bash
-curl -X POST "http://localhost:8000/batch" \
+curl -X POST "https://api.soket.ai/transcribe/batch" \
   -H "Authorization: Bearer $JWT_TOKEN" \
   -F "files=@/absolute/path/audio1.wav" \
   -F "files=@/absolute/path/audio2.mp3" \
@@ -146,22 +102,21 @@ curl -X POST "http://localhost:8000/batch" \
 }
 ```
 
-In development mode, each `jobs[]` item additionally includes internal fields such as `job_id`, `rq_job_id`, `type`, and `estimated_audio_seconds`.
-
 ## `GET /status/{job_id}`
 
-Returns one job status/result document.
+Returns the status and result for a single file job. Depending on state:
 
-- If the job is already persisted in MongoDB, you get the full stored job document.
-- If still in memory/queue, you get the in-flight metadata (with current RQ status when available).
-- If not found, response is `{ "error": "not found" }`.
+- **Completed**: full job payload, including merged transcript/result when available.
+- **Queued or processing**: current job status and any metadata available so far (no final transcript yet).
+- **Failed or retrying**: job status plus error details when present.
+- **Not found**: `{ "error": "not found" }`.
 
 `job_id` is typically available in development/internal flows. Production clients usually track by `batch_id` and `file_id`.
 
 ### Example
 
 ```bash
-curl -X GET "http://localhost:8000/status/$JOB_ID" \
+curl -X GET "https://api.soket.ai/transcribe/status/$JOB_ID" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
@@ -189,7 +144,7 @@ In development mode, this response also includes job counters:
 ### Example
 
 ```bash
-curl -X GET "http://localhost:8000/status/batch/$BATCH_ID" \
+curl -X GET "https://api.soket.ai/transcribe/status/batch/$BATCH_ID" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
@@ -211,14 +166,14 @@ Paginated results endpoint.
 ### Example (merged, completed-only)
 
 ```bash
-curl -X GET "http://localhost:8000/results/batch/$BATCH_ID?status=completed&page=1&limit=100" \
+curl -X GET "https://api.soket.ai/transcribe/results/batch/$BATCH_ID?status=completed&page=1&limit=100" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
 ### Example (raw job records)
 
 ```bash
-curl -X GET "http://localhost:8000/results/batch/$BATCH_ID?raw=true&page=1&limit=100" \
+curl -X GET "https://api.soket.ai/transcribe/results/batch/$BATCH_ID?raw=true&page=1&limit=100" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
@@ -242,7 +197,7 @@ Returns merged transcript and status for one file.
 ### Example
 
 ```bash
-curl -X GET "http://localhost:8000/results/file/$FILE_ID?chunks=true" \
+curl -X GET "https://api.soket.ai/transcribe/results/file/$FILE_ID?chunks=true" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
@@ -268,7 +223,7 @@ Download all results for a batch as stream.
 
 ```bash
 curl -L -o "batch_results.ndjson" \
-  "http://localhost:8000/download/batch/$BATCH_ID?format=ndjson" \
+  "https://api.soket.ai/transcribe/download/batch/$BATCH_ID?format=ndjson" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
@@ -276,7 +231,7 @@ curl -L -o "batch_results.ndjson" \
 
 ```bash
 curl -L -o "batch_completed.json" \
-  "http://localhost:8000/download/batch/$BATCH_ID?status=completed&format=json" \
+  "https://api.soket.ai/transcribe/download/batch/$BATCH_ID?status=completed&format=json" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
@@ -286,7 +241,7 @@ curl -L -o "batch_completed.json" \
 
 ```bash
 # 1) Submit
-RESP=$(curl -s -X POST "http://localhost:8000/batch" \
+RESP=$(curl -s -X POST "https://api.soket.ai/transcribe/batch" \
   -H "Authorization: Bearer $JWT_TOKEN" \
   -F "files=@/absolute/path/call_001.wav")
 
@@ -295,48 +250,29 @@ BATCH_ID=$(echo "$RESP" | python -c 'import sys,json; print(json.load(sys.stdin)
 FILE_ID=$(echo "$RESP" | python -c 'import sys,json; print(json.load(sys.stdin)["jobs"][0]["file_id"])')
 
 # 2) Poll batch status
-curl -s -X GET "http://localhost:8000/status/batch/$BATCH_ID" \
+curl -s -X GET "https://api.soket.ai/transcribe/status/batch/$BATCH_ID" \
   -H "Authorization: Bearer $JWT_TOKEN"
 
 # 3) Fetch first page of merged file results
-curl -s -X GET "http://localhost:8000/results/batch/$BATCH_ID?page=1&limit=50" \
+curl -s -X GET "https://api.soket.ai/transcribe/results/batch/$BATCH_ID?page=1&limit=50" \
   -H "Authorization: Bearer $JWT_TOKEN"
 
 # 3b) Fetch one file result directly
-curl -s -X GET "http://localhost:8000/results/file/$FILE_ID" \
+curl -s -X GET "https://api.soket.ai/transcribe/results/file/$FILE_ID" \
   -H "Authorization: Bearer $JWT_TOKEN"
 
 # 4) Download full export
 curl -L -o "batch_${BATCH_ID}.ndjson" \
-  "http://localhost:8000/download/batch/$BATCH_ID?format=ndjson" \
+  "https://api.soket.ai/transcribe/download/batch/$BATCH_ID?format=ndjson" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
 ### Example B: Get one file's merged transcript
 
 ```bash
-curl -s -X GET "http://localhost:8000/results/file/$FILE_ID" \
+curl -s -X GET "https://api.soket.ai/transcribe/results/file/$FILE_ID" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
-
-### Example C: Queue health check for autoscaling signal
-
-```bash
-curl -s "http://localhost:8000/health/queues"
-```
-
-### Example D: Inference connectivity check
-
-```bash
-curl -s "http://localhost:8000/health/inference"
-```
-
-Monitor:
-
-- rising `queues.file_queue.depth` / `queues.job_queue.depth`
-- `litserve_semaphore.saturated = true`
-
-These indicate throughput pressure and likely need for worker/concurrency scaling.
 
 ## Error handling quick reference
 
@@ -361,7 +297,7 @@ When a batch is submitted, the system runs a two-stage queue pipeline:
 
 ```mermaid
 flowchart TD
-    A["Client\nPOST /batch"] --> B[FastAPI API Server]
+    A["Client\nPOST /batch"] --> B[API Server]
     B --> C[JWT verification]
     C --> D["Validate limits\nbatch size/jobs/queue depth"]
     D --> E[Store uploaded files to storage\nstream_upload]
@@ -381,18 +317,18 @@ flowchart TD
     N --> O[process_chunk_job]
 
     O --> P{"INFERENCE_BATCH_SIZE > 1?"}
-    P -->|Yes| Q[Batch gate in Redis\ncollect chunk refs]
-    Q --> R["Gate leader pulls N chunks,\ndownloads in parallel,\nfires simultaneous LitServe requests"]
-    P -->|No| S["Direct chunk -> LitServe call"]
+    P -->|Yes| Q[Batch gate\ncollect chunk refs]
+    Q --> R["Gate leader pulls N chunks,\ndownloads in parallel,\nruns parallel ASR inference"]
+    P -->|No| S["Direct chunk ASR inference"]
 
     R --> T[Chunk result]
     S --> T
-    T --> U["Persist chunk status/result\nMongo chunk_jobs"]
-    U --> V["_on_chunk_terminal\nRedis counters: chunks_done/chunks_failed"]
+    T --> U["Persist chunk status/result"]
+    U --> V["Update completion counters\nchunks_done/chunks_failed"]
     V --> W{"All chunks done?"}
     W -->|No| M
     W -->|Yes| X[Finalize parent job\nmerge chunk transcriptions]
-    X --> Y["Persist parent result/status\nMongo jobs"]
+    X --> Y["Persist parent result/status"]
 
     Y --> Z["Client polling endpoints\n/status, /status/batch,\n/results, /download"]
 ```
@@ -408,28 +344,28 @@ flowchart TD
 
 The system supports two retry modes, controlled by the `SEPARATE_RETRY_QUEUES` environment variable:
 
-**Default (`SEPARATE_RETRY_QUEUES=false`)**: RQ's built-in `retry=` parameter re-enqueues failed jobs back onto the same primary queue after configured intervals. Simple and reliable.
+**Default (`SEPARATE_RETRY_QUEUES=false`)**: failed jobs are automatically re-enqueued on the same primary queue after configured intervals. Simple and reliable.
 
 **Separate retry queues (`SEPARATE_RETRY_QUEUES=true`)**: Failed jobs are manually re-enqueued onto dedicated retry queues (`file_retry_queue`, `job_retry_queue`) by custom failure callbacks. Workers listen on `[primary, retry]` in that order, so fresh jobs always take priority over retries. Use this when you need retry jobs to have lower scheduling priority than new work.
 
 Related env vars for separate mode:
 - `CHUNK_MAX_RETRIES_SEPARATE` (default `3`): max retry attempts before permanent failure.
 - `CHUNK_RETRY_INTERVALS_SEPARATE` (default `30,60,120`): delay in seconds between retry attempts.
-- `SAVE_AUDIO_DATA` (default `true`): when `true`, raw audio bytes and metadata are saved to Mongo `audio_data`; set to `false` to skip audio-data persistence.
+- `SAVE_AUDIO_DATA` (default `true`): when `true`, raw audio bytes and metadata are saved for debugging and replay; set to `false` to skip audio-data persistence.
 
 ### Major processes
 
 - **Ingress and validation**: auth, limits, back-pressure checks, and storage upload.
 - **Parent stage**: normalize source input, load source audio, chunk, and enqueue child jobs.
-- **Chunk stage**: inference through direct LitServe call or batch gate coordination.
-- **Persistence and counters**: update Mongo (`jobs`, `chunk_jobs`) plus Redis completion counters.
+- **Chunk stage**: inference through direct ASR calls or batch gate coordination.
+- **Persistence and counters**: update job stores and completion counters.
 - **Finalize and expose**: merge chunk transcriptions into parent result, then serve via status/results/download endpoints.
 
 ### Failure and retry scenarios
 
-- **Transient network/5xx to LitServe**:
+- **Transient network or inference errors**:
   - chunk/parent status is marked `retrying`
-  - default mode: RQ retries on the same queue with configured intervals
+  - default mode: automatic retries on the same queue with configured intervals
   - separate mode: failure callback re-enqueues onto the retry queue with a delay
   - work remains isolated to failed jobs/chunks
 - **Chunk permanently fails after retries**:
@@ -440,8 +376,7 @@ Related env vars for separate mode:
   - parent marked `failed` to avoid duplicate enqueue on retry
   - already-enqueued child chunks continue to terminal state
 - **Worker crash or stale in-flight state**:
-  - startup recovery requeues stale RQ jobs
+  - startup recovery requeues stale in-flight jobs
   - stuck chunk recovery marks orphaned processing chunks as failed
 - **Queue pressure**:
   - API may reject new batch submissions with `503` when queue depth limits are exceeded
-  - use `GET /health/queues` for autoscaling and saturation signals

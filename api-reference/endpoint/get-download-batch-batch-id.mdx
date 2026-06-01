@@ -15,7 +15,7 @@ Downloads all results for a batch as a stream.
 
 ```bash
 curl -L -o "batch_results.ndjson" \
-  "http://localhost:8000/download/batch/$BATCH_ID?format=ndjson" \
+  "https://api.soket.ai/transcribe/download/batch/$BATCH_ID?format=ndjson" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
@@ -23,6 +23,6 @@ curl -L -o "batch_results.ndjson" \
 
 ```bash
 curl -L -o "batch_completed.json" \
-  "http://localhost:8000/download/batch/$BATCH_ID?status=completed&format=json" \
+  "https://api.soket.ai/transcribe/download/batch/$BATCH_ID?status=completed&format=json" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```

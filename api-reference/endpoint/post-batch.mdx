@@ -12,7 +12,7 @@ At least one of `files` or `audio_urls` is required.
 ## Example (files + URLs)
 
 ```bash
-curl -X POST "http://localhost:8000/batch" \
+curl -X POST "https://api.soket.ai/transcribe/batch" \
   -H "Authorization: Bearer $JWT_TOKEN" \
   -F "files=@/absolute/path/audio1.wav" \
   -F "files=@/absolute/path/audio2.mp3" \
@@ -40,6 +40,3 @@ curl -X POST "http://localhost:8000/batch" \
   ]
 }
 ```
-
-In development mode, each `jobs[]` item may additionally include internal fields such as
-`job_id`, `rq_job_id`, `type`, and `estimated_audio_seconds`.

@@ -17,14 +17,14 @@ Paginated batch results endpoint.
 ## Example (merged, completed only)
 
 ```bash
-curl -X GET "http://localhost:8000/results/batch/$BATCH_ID?status=completed&page=1&limit=100" \
+curl -X GET "https://api.soket.ai/transcribe/results/batch/$BATCH_ID?status=completed&page=1&limit=100" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
 ## Example (raw job records)
 
 ```bash
-curl -X GET "http://localhost:8000/results/batch/$BATCH_ID?raw=true&page=1&limit=100" \
+curl -X GET "https://api.soket.ai/transcribe/results/batch/$BATCH_ID?raw=true&page=1&limit=100" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
