@@ -24,16 +24,13 @@ curl -X POST "http://localhost:8000/batch" \
 ```json
 {
   "batch_id": "0f8fad5b-d9cb-469f-a165-70867728950e",
-  "total_jobs": 4,
+  "total_jobs": 1,
   "estimated_audio_seconds": 290.0,
   "estimated_completion_seconds": 21.7,
   "jobs": [
     {
-      "job_id": "2f5bb6b9-7f5d-4d61-a8f8-48e8f8f1f22d",
-      "rq_job_id": "6f5d8f11-b0c3-44f2-9600-2f4efbe7f8f7",
       "batch_id": "0f8fad5b-d9cb-469f-a165-70867728950e",
       "file_id": "1374132b-b5db-4ec3-9cf1-f61f982e89b0",
-      "type": "gcs_file",
       "filename": "audio1.wav",
       "status": "queued"
     }
@@ -41,5 +38,4 @@ curl -X POST "http://localhost:8000/batch" \
 }
 ```
 
-In development mode, each `jobs[]` item may additionally include internal fields such as
-`job_id`, `rq_job_id`, `type`, and `estimated_audio_seconds`.
+

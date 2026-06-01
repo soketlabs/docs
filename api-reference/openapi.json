@@ -19,7 +19,7 @@
     "/batch": {
       "post": {
         "operationId": "submitBatch",
-        "summary": "Submit a transcription batch",
+        "summary": "Submit batch transcription",
         "description": "Submit one batch with local files and/or remote audio URLs.",
         "requestBody": {
           "required": true,
@@ -68,55 +68,6 @@
           },
           "401": {
             "description": "Missing or invalid token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/status/{job_id}": {
-      "get": {
-        "operationId": "getJobStatus",
-        "summary": "Get status by job ID",
-        "description": "Returns one job status/result document. For in-flight jobs, includes queue status.",
-        "parameters": [
-          {
-            "name": "job_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Job status response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JobStatusResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Job not found",
             "content": {
               "application/json": {
                 "schema": {

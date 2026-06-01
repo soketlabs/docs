@@ -34,8 +34,6 @@ Application endpoints require JWT and expect:
 
 The token is validated against JWKS. Missing or invalid tokens return `401`.
 
-Health endpoints (`GET /health/queues`, `GET /health/inference`) are intended for operational checks and are available without JWT.
-
 ### IDs you will use
 
 - `batch_id`: groups everything from one submission.
@@ -62,9 +60,6 @@ Health endpoints (`GET /health/queues`, `GET /health/inference`) are intended fo
   - `total_files`, `total_jobs`
   - `completed_jobs`, `failed_jobs`, `processing_jobs`, `queued_jobs`
   - `files_completed`, `files_failed`, `files_processing`
-- Queue health telemetry (`GET /health/queues`):
-  - queue depth + max depth for file/job/retry queues
-  - semaphore `inflight`, `capacity`, `available`, `saturated`
 
 ### Default pagination behavior
 
@@ -75,38 +70,7 @@ Health endpoints (`GET /health/queues`, `GET /health/inference`) are intended fo
 
 ## 3) Endpoints and Usage
 
-Base URL examples below use `http://localhost:8000`. Replace with your deployed host in production.
-
-## `GET /protected`
-
-Returns token-derived identity and limits for verification.
-
-### Example
-
-```bash
-curl -X GET "http://localhost:8000/protected" \
-  -H "Authorization: Bearer $JWT_TOKEN"
-```
-
-## `GET /health/queues`
-
-Operational health snapshot of queue depth and LitServe semaphore occupancy.
-
-### Example
-
-```bash
-curl -X GET "http://localhost:8000/health/queues"
-```
-
-## `GET /health/inference`
-
-Connectivity check for the inference service used by workers.
-
-### Example
-
-```bash
-curl -X GET "http://localhost:8000/health/inference"
-```
+Base URL examples below use `https://api.soket.ai/transcribe`. Replace with your deployed host in production.
 
 ## `POST /batch`
 
@@ -120,7 +84,7 @@ At least one of `files` or `audio_urls` is required.
 ### Example (files + URLs)
 
 ```bash
-curl -X POST "http://localhost:8000/batch" \
+curl -X POST "https://api.soket.ai/transcribe/batch" \
   -H "Authorization: Bearer $JWT_TOKEN" \
   -F "files=@/absolute/path/audio1.wav" \
   -F "files=@/absolute/path/audio2.mp3" \
