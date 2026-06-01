@@ -34,5 +34,6 @@ Install our Github App to auto propagate changes from your repo to your deployme
 
 #### Troubleshooting
 
-- Mintlify dev isn't running - Run `mintlify install` it'll re-install dependencies.
-- Page loads as a 404 - Make sure you are running in a folder with `mint.json`
+- **Stuck on "preparing local preview..."** — Stop the server (Ctrl+C), then run `npm run dev` again. The first start can take 30–60 seconds while OpenAPI and pages are built. Use Node 24 (`nvm use`). Avoid `npx mintlify dev`; this repo uses the local CLI via `npm run dev`. If you only need prose pages (no API playground), use `npm run dev:quick`.
+- Mintlify dev isn't running — Run `npm install`, then `npm run dev`.
+- Page loads as a 404 — Run from the repo root that contains `docs.json`.

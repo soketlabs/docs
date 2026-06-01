@@ -8,6 +8,7 @@
     "dark": "#111111"
   },
   "favicon": "/favicon.svg",
+  "openapi": "/api-reference/openapi.json",
   "navigation": {
     "tabs": [
       {
@@ -62,9 +63,6 @@
             "group": "Dhrith ASR API",
             "pages": [
               "api-reference/introduction",
-              "api-reference/endpoint/get-protected",
-              "api-reference/endpoint/get-health-queues",
-              "api-reference/endpoint/get-health-inference",
               "api-reference/endpoint/post-batch",
               "api-reference/endpoint/get-status-job-id",
               "api-reference/endpoint/get-status-batch-batch-id",
