@@ -7,7 +7,12 @@
   },
   "servers": [
     {
-      "url": "https://api.soket.ai/transcribe"
+      "url": "https://api.soket.ai/transcribe",
+      "description": "Batch transcription, status, results, and download"
+    },
+    {
+      "url": "https://api.soket.ai",
+      "description": "File upload and management"
     }
   ],
   "security": [
@@ -17,6 +22,11 @@
   ],
   "paths": {
     "/files/upload": {
+      "servers": [
+        {
+          "url": "https://api.soket.ai"
+        }
+      ],
       "post": {
         "operationId": "uploadFiles",
         "summary": "Upload files",
@@ -77,6 +87,11 @@
       }
     },
     "/files/upload/{batch_upload_id}": {
+      "servers": [
+        {
+          "url": "https://api.soket.ai"
+        }
+      ],
       "get": {
         "operationId": "getUploadStatus",
         "summary": "Get file upload status",
@@ -126,6 +141,11 @@
       }
     },
     "/files": {
+      "servers": [
+        {
+          "url": "https://api.soket.ai"
+        }
+      ],
       "get": {
         "operationId": "listFiles",
         "summary": "List files",

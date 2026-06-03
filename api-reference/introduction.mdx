@@ -69,7 +69,7 @@ The token is validated against JWKS. Missing or invalid tokens return `401`.
 
 ## 3) Endpoints and Usage
 
-Base URL examples below use `https://api.soket.ai/transcribe`.
+File endpoints use base URL `https://api.soket.ai`. Batch transcription, status, results, and download endpoints use `https://api.soket.ai/transcribe`.
 
 ## `POST /files/upload`
 
@@ -78,7 +78,7 @@ Upload one or more audio files. Returns `202 Accepted` immediately with a `batch
 ### Example
 
 ```bash
-curl -X POST "https://api.soket.ai/transcribe/files/upload" \
+curl -X POST "https://api.soket.ai/files/upload" \
   -H "Authorization: Bearer $JWT_TOKEN" \
   -F "files=@/absolute/path/audio1.wav" \
   -F "files=@/absolute/path/audio2.mp3"
@@ -111,7 +111,7 @@ Poll upload progress. Returns per-file `upload_status` and `gcs_key` for complet
 ### Example
 
 ```bash
-curl -X GET "https://api.soket.ai/transcribe/files/upload/$BATCH_UPLOAD_ID" \
+curl -X GET "https://api.soket.ai/files/upload/$BATCH_UPLOAD_ID" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
@@ -128,7 +128,7 @@ List all files uploaded by the authenticated user.
 ### Example
 
 ```bash
-curl -X GET "https://api.soket.ai/transcribe/files?upload_status=completed" \
+curl -X GET "https://api.soket.ai/files?upload_status=completed" \
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
@@ -139,7 +139,7 @@ Delete one or more uploaded files by `file_id`.
 ### Example
 
 ```bash
-curl -X DELETE "https://api.soket.ai/transcribe/files" \
+curl -X DELETE "https://api.soket.ai/files" \
   -H "Authorization: Bearer $JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"file_ids": ["1374132b-b5db-4ec3-9cf1-f61f982e89b0"]}'
@@ -329,7 +329,7 @@ curl -L -o "batch_completed.json" \
 
 ```bash
 # 1) Upload files
-UPLOAD=$(curl -s -X POST "https://api.soket.ai/transcribe/files/upload" \
+UPLOAD=$(curl -s -X POST "https://api.soket.ai/files/upload" \
   -H "Authorization: Bearer $JWT_TOKEN" \
   -F "files=@/absolute/path/call_001.wav")
 
@@ -337,7 +337,7 @@ echo "$UPLOAD"
 BATCH_UPLOAD_ID=$(echo "$UPLOAD" | python -c 'import sys,json; print(json.load(sys.stdin)["batch_upload_id"])')
 
 # 2) Poll upload status until completed
-curl -s -X GET "https://api.soket.ai/transcribe/files/upload/$BATCH_UPLOAD_ID" \
+curl -s -X GET "https://api.soket.ai/files/upload/$BATCH_UPLOAD_ID" \
   -H "Authorization: Bearer $JWT_TOKEN"
 
 # 3) Submit batch

@@ -7,7 +7,7 @@ Accept one or more audio files as multipart form data. Files are spooled to disk
 ## Example
 
 ```bash
-curl -X POST "https://api.soket.ai/transcribe/files/upload" \
+curl -X POST "https://api.soket.ai/files/upload" \
   -H "Authorization: Bearer $JWT_TOKEN" \
   -F "files=@/absolute/path/audio1.wav" \
   -F "files=@/absolute/path/audio2.mp3"
