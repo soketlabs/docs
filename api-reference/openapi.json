@@ -3,7 +3,7 @@
   "info": {
     "title": "Dhrith ASR API",
     "version": "1.0.0",
-    "description": "Submit audio batches, track progress, and fetch merged transcription results."
+    "description": "Upload audio, submit batches, track progress, and fetch merged transcription results."
   },
   "servers": [
     {
@@ -16,17 +16,18 @@
     }
   ],
   "paths": {
-    "/batch": {
+    "/files/upload": {
       "post": {
-        "operationId": "submitBatch",
-        "summary": "Submit batch transcription",
-        "description": "Submit one batch with local files and/or remote audio URLs.",
+        "operationId": "uploadFiles",
+        "summary": "Upload files",
+        "description": "Accept multipart files, spool them to disk, start background storage uploads, and return immediately with a batch_upload_id. Poll GET /files/upload/{batch_upload_id} until uploads complete before submitting a batch.",
         "requestBody": {
           "required": true,
           "content": {
             "multipart/form-data": {
               "schema": {
                 "type": "object",
+                "required": ["files"],
                 "properties": {
                   "files": {
                     "type": "array",
@@ -35,10 +36,6 @@
                       "format": "binary"
                     },
                     "description": "One or more audio files"
-                  },
-                  "audio_urls": {
-                    "type": "string",
-                    "description": "JSON array string of public audio URLs"
                   }
                 }
               }
@@ -46,8 +43,224 @@
           }
         },
         "responses": {
+          "202": {
+            "description": "Upload accepted; background upload in progress",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadAcceptedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or file exceeds size limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/upload/{batch_upload_id}": {
+      "get": {
+        "operationId": "getUploadStatus",
+        "summary": "Get file upload status",
+        "description": "Poll upload progress for a batch_upload_id returned by POST /files/upload. Returns per-file upload_status and gcs_key for completed files.",
+        "parameters": [
+          {
+            "name": "batch_upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
           "200": {
-            "description": "Batch accepted",
+            "description": "Upload status response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadStatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Upload batch not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files": {
+      "get": {
+        "operationId": "listFiles",
+        "summary": "List files",
+        "description": "List all files uploaded by the authenticated user, flattened across upload batches. Returns newest files first.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 200
+            }
+          },
+          {
+            "name": "upload_status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "uploading", "completed", "failed"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated file list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteFiles",
+        "summary": "Delete files",
+        "description": "Delete one or more uploaded files by file_id. Removes storage objects, upload records, and related jobs.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteFilesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Files deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteFilesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Empty file_ids list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Some file_ids not found or not owned by you",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/batch": {
+      "post": {
+        "operationId": "submitBatch",
+        "summary": "Submit batch transcription",
+        "description": "Submit a batch for transcription using a completed batch_upload_id, specific file_ids from prior uploads, and/or an explicit sources list with gcs_key or url per item.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch accepted and enqueued",
             "content": {
               "application/json": {
                 "schema": {
@@ -68,6 +281,56 @@
           },
           "401": {
             "description": "Missing or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Upload batch belongs to a different user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "batch_upload_id or file_ids not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Uploads still in progress or file_ids not yet completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Quota exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Queue full",
             "content": {
               "application/json": {
                 "schema": {
@@ -132,7 +395,7 @@
       "get": {
         "operationId": "getBatchResults",
         "summary": "Get batch results",
-        "description": "Paginated results endpoint.",
+        "description": "Paginated batch results grouped by file. By default returns merged per-file transcription results.",
         "parameters": [
           {
             "name": "batch_id",
@@ -148,12 +411,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [
-                "completed",
-                "failed",
-                "retrying",
-                "processing"
-              ]
+              "enum": ["completed", "failed", "retrying", "processing"]
             }
           },
           {
@@ -162,7 +420,8 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "default": 1
+              "default": 1,
+              "minimum": 1
             }
           },
           {
@@ -172,6 +431,7 @@
             "schema": {
               "type": "integer",
               "default": 50,
+              "minimum": 1,
               "maximum": 200
             }
           },
@@ -191,6 +451,15 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "speech_information",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Include segment-level speech information (tone, accent, speaker_id, timestamps, etc.)"
           }
         ],
         "responses": {
@@ -230,7 +499,7 @@
     "/results/file/{file_id}": {
       "get": {
         "operationId": "getFileResults",
-        "summary": "Get results by file ID",
+        "summary": "Get file results",
         "description": "Returns merged transcript and status for one file.",
         "parameters": [
           {
@@ -248,6 +517,15 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "speech_information",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Include segment-level speech information (tone, accent, speaker_id, timestamps, etc.)"
           }
         ],
         "responses": {
@@ -288,7 +566,7 @@
       "get": {
         "operationId": "downloadBatchResults",
         "summary": "Download batch results",
-        "description": "Download all results for a batch as NDJSON or JSON.",
+        "description": "Stream all results for a batch as a downloadable NDJSON or JSON file.",
         "parameters": [
           {
             "name": "batch_id",
@@ -303,7 +581,8 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": ["completed", "failed", "processing"]
             }
           },
           {
@@ -312,10 +591,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [
-                "ndjson",
-                "json"
-              ],
+              "enum": ["ndjson", "json"],
               "default": "ndjson"
             }
           },
@@ -335,6 +611,15 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "speech_information",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Include segment-level speech information in merged output"
           }
         ],
         "responses": {
@@ -388,19 +673,189 @@
       }
     },
     "schemas": {
-      "BatchJob": {
+      "UploadAcceptedResponse": {
         "type": "object",
         "properties": {
-          "job_id": {
+          "batch_upload_id": {
             "type": "string"
           },
-          "batch_id": {
-            "type": "string"
+          "status": {
+            "type": "string",
+            "example": "accepted"
           },
+          "total_files": {
+            "type": "integer"
+          },
+          "spool_seconds": {
+            "type": "number"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UploadedFileSummary"
+            }
+          }
+        }
+      },
+      "UploadedFileSummary": {
+        "type": "object",
+        "properties": {
           "file_id": {
             "type": "string"
           },
           "filename": {
+            "type": "string"
+          },
+          "size_bytes": {
+            "type": "integer"
+          },
+          "estimated_duration_seconds": {
+            "type": "number"
+          },
+          "upload_status": {
+            "type": "string",
+            "enum": ["pending", "uploading", "completed", "failed"]
+          }
+        }
+      },
+      "UploadStatusResponse": {
+        "type": "object",
+        "properties": {
+          "batch_upload_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "total_files": {
+            "type": "integer"
+          },
+          "completed": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "uploading": {
+            "type": "integer"
+          },
+          "pending": {
+            "type": "integer"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UploadedFileSummary"
+            }
+          }
+        }
+      },
+      "FileListResponse": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "total_files": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "DeleteFilesRequest": {
+        "type": "object",
+        "required": ["file_ids"],
+        "properties": {
+          "file_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "DeleteFilesResponse": {
+        "type": "object",
+        "properties": {
+          "deleted_file_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "deleted_count": {
+            "type": "integer"
+          },
+          "storage_objects_deleted": {
+            "type": "integer"
+          },
+          "jobs_cleaned": {
+            "type": "integer"
+          }
+        }
+      },
+      "SourceItem": {
+        "type": "object",
+        "properties": {
+          "gcs_key": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          }
+        }
+      },
+      "BatchRequest": {
+        "type": "object",
+        "properties": {
+          "batch_upload_id": {
+            "type": "string",
+            "description": "Include all completed files from this POST /files/upload response"
+          },
+          "file_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Specific file_id values from POST /files/upload; can span multiple upload batches"
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SourceItem"
+            },
+            "description": "Explicit GCS keys or URLs; each item must have gcs_key or url"
+          }
+        }
+      },
+      "BatchJob": {
+        "type": "object",
+        "properties": {
+          "file_id": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "batch_id": {
             "type": "string"
           },
           "status": {
@@ -431,24 +886,6 @@
           }
         }
       },
-      "JobStatusResponse": {
-        "type": "object",
-        "properties": {
-          "job_id": {
-            "type": "string"
-          },
-          "batch_id": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "result": {
-            "type": "object",
-            "additionalProperties": true
-          }
-        }
-      },
       "BatchStatusResponse": {
         "type": "object",
         "properties": {
@@ -457,6 +894,21 @@
           },
           "total_files": {
             "type": "integer"
+          },
+          "files_completed": {
+            "type": "integer"
+          },
+          "files_failed": {
+            "type": "integer"
+          },
+          "estimated_audio_seconds": {
+            "type": "number"
+          },
+          "estimated_completion_seconds": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string"
           },
           "total_jobs": {
             "type": "integer"
@@ -471,6 +923,9 @@
             "type": "integer"
           },
           "queued_jobs": {
+            "type": "integer"
+          },
+          "files_processing": {
             "type": "integer"
           }
         }
@@ -487,7 +942,16 @@
           "limit": {
             "type": "integer"
           },
-          "results": {
+          "total_pages": {
+            "type": "integer"
+          },
+          "total_files": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "files": {
             "type": "array",
             "items": {
               "type": "object",
@@ -502,13 +966,24 @@
           "file_id": {
             "type": "string"
           },
+          "filename": {
+            "type": "string"
+          },
           "status": {
             "type": "string"
           },
-          "transcript": {
-            "type": "string"
+          "result": {
+            "type": "object",
+            "additionalProperties": true
           },
-          "chunks": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "chunk_results": {
             "type": "array",
             "items": {
               "type": "object",
@@ -521,7 +996,15 @@
         "type": "object",
         "properties": {
           "detail": {
-            "type": "string"
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
           }
         }
       }

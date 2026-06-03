@@ -1,18 +1,19 @@
 ---
 title: Dhrith ASR API
-description: Submit audio batches, monitor transcription progress, and fetch merged results from the Dhrith ASR API server.
+description: Upload audio, submit batches, monitor transcription progress, and fetch merged results from the Dhrith ASR API server.
 ---
 
 
 
 ## Welcome
 
-The Dhrith ASR API is a batch transcription service for Indian multilingual speech. Submit audio files or URLs, track processing progress, and retrieve merged transcripts at scale.
+The Dhrith ASR API is a batch transcription service for Indian multilingual speech. Upload audio files or provide URLs, submit batches for transcription, track processing progress, and retrieve merged transcripts at scale.
 
 Use this API to:
 
-- Submit files and/or audio URLs in one batch request.
-- Track progress at batch level (and file job level when `job_id` is available).
+- Upload files asynchronously and poll upload status.
+- Submit batches from completed uploads and/or explicit GCS keys or URLs.
+- Track progress at batch level and fetch merged results per file.
 
 If you are new to the TensorStudio docs flow, start from the [API Keys](https://docs.tensorstudio.ai/apis).
 
@@ -20,8 +21,10 @@ If you are new to the TensorStudio docs flow, start from the [API Keys](https://
 
 ### Processing flow
 
-1. Client sends `POST /batch` with files and/or `audio_urls`.
-2. Client polls status endpoints or fetches paginated/downloadable results.
+1. Client sends `POST /files/upload` with multipart files.
+2. Client polls `GET /files/upload/{batch_upload_id}` until uploads complete.
+3. Client sends `POST /batch` with `batch_upload_id`, `file_ids`, and/or a `sources` list.
+4. Client polls status endpoints or fetches paginated/downloadable results.
 
 ### Authentication
 
@@ -33,29 +36,33 @@ The token is validated against JWKS. Missing or invalid tokens return `401`.
 
 ### IDs you will use
 
-- `batch_id`: groups everything from one submission.
-- `job_id`: file job ID returned at submit time.
+- `batch_upload_id`: groups files from one upload request.
+- `batch_id`: groups everything from one transcription submission.
 - `file_id`: stable ID for one source file/URL and its merged result.
 
 ## 2) Features and Metrics
 
 ### Core features
 
-- **Batch input support**: local file uploads and remote audio URLs in one request.
+- **Async file upload**: spool-to-disk with background storage upload.
+- **Batch input support**: completed uploads, specific uploaded files by `file_id`, explicit GCS keys, and remote audio URLs in one batch request.
+- **File management**: list and delete uploaded files.
 
 ### Operational metrics exposed by API responses
 
+- Upload metrics:
+  - `spool_seconds`, `upload_status` per file
+  - `completed`, `failed`, `uploading`, `pending` counters
 - Submission estimates:
   - `estimated_audio_seconds`
   - `estimated_completion_seconds`
 - Batch progress counters:
-  - `total_files`, `total_jobs`
-  - `completed_jobs`, `failed_jobs`, `processing_jobs`, `queued_jobs`
-  - `files_completed`, `files_failed`, `files_processing`
+  - `total_files`, `files_completed`, `files_failed`, `files_processing`
+  - In development mode: `total_jobs`, `completed_jobs`, `failed_jobs`, `processing_jobs`, `queued_jobs`
 
 ### Default pagination behavior
 
-- `results` endpoint defaults:
+- `GET /files` and results endpoints default:
   - `page=1`
   - `limit=50`
   - max `limit=200`
@@ -64,23 +71,120 @@ The token is validated against JWKS. Missing or invalid tokens return `401`.
 
 Base URL examples below use `https://api.soket.ai/transcribe`.
 
+## `POST /files/upload`
+
+Upload one or more audio files. Returns `202 Accepted` immediately with a `batch_upload_id`. Background storage upload continues after the response.
+
+### Example
+
+```bash
+curl -X POST "https://api.soket.ai/transcribe/files/upload" \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -F "files=@/absolute/path/audio1.wav" \
+  -F "files=@/absolute/path/audio2.mp3"
+```
+
+### Typical response
+
+```json
+{
+  "batch_upload_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "status": "accepted",
+  "total_files": 2,
+  "spool_seconds": 0.42,
+  "files": [
+    {
+      "file_id": "1374132b-b5db-4ec3-9cf1-f61f982e89b0",
+      "filename": "audio1.wav",
+      "size_bytes": 1048576,
+      "estimated_duration_seconds": 65.5,
+      "upload_status": "pending"
+    }
+  ]
+}
+```
+
+## `GET /files/upload/{batch_upload_id}`
+
+Poll upload progress. Returns per-file `upload_status` and `gcs_key` for completed files.
+
+### Example
+
+```bash
+curl -X GET "https://api.soket.ai/transcribe/files/upload/$BATCH_UPLOAD_ID" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```
+
+## `GET /files`
+
+List all files uploaded by the authenticated user.
+
+### Query params
+
+- `page` (default: `1`)
+- `limit` (default: `50`, max: `200`)
+- `upload_status` (optional): `pending`, `uploading`, `completed`, `failed`
+
+### Example
+
+```bash
+curl -X GET "https://api.soket.ai/transcribe/files?upload_status=completed" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```
+
+## `DELETE /files`
+
+Delete one or more uploaded files by `file_id`.
+
+### Example
+
+```bash
+curl -X DELETE "https://api.soket.ai/transcribe/files" \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"file_ids": ["1374132b-b5db-4ec3-9cf1-f61f982e89b0"]}'
+```
+
 ## `POST /batch`
 
-Submit one batch with:
+Submit a batch for transcription with a JSON body:
 
-- `files`: multipart file fields (optional)
-- `audio_urls`: JSON array string in multipart form (optional)
+- `batch_upload_id` (optional): include all completed files from one upload
+- `file_ids` (optional): list of specific `file_id` strings from prior uploads
+- `sources` (optional): list of `{ gcs_key, filename }` or `{ url, filename }` items
 
-At least one of `files` or `audio_urls` is required.
+At least one of `batch_upload_id`, `file_ids`, or `sources` must resolve to at least one file. All fields can be combined.
 
-### Example (files + URLs)
+### Example (from completed upload)
 
 ```bash
 curl -X POST "https://api.soket.ai/transcribe/batch" \
   -H "Authorization: Bearer $JWT_TOKEN" \
-  -F "files=@/absolute/path/audio1.wav" \
-  -F "files=@/absolute/path/audio2.mp3" \
-  -F 'audio_urls=["https://example.com/audio3.wav","https://example.com/audio4.mp3"]'
+  -H "Content-Type: application/json" \
+  -d '{"batch_upload_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"}'
+```
+
+### Example (specific file_ids)
+
+```bash
+curl -X POST "https://api.soket.ai/transcribe/batch" \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"file_ids": ["1374132b-b5db-4ec3-9cf1-f61f982e89b0", "2485243c-c6ec-5fd4-0dg2-g72g093f90c1"]}'
+```
+
+### Example (upload batch + URLs)
+
+```bash
+curl -X POST "https://api.soket.ai/transcribe/batch" \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "batch_upload_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "sources": [
+      {"url": "https://example.com/audio3.wav", "filename": "audio3.wav"}
+    ]
+  }'
 ```
 
 ### Typical response
@@ -88,7 +192,7 @@ curl -X POST "https://api.soket.ai/transcribe/batch" \
 ```json
 {
   "batch_id": "0f8fad5b-d9cb-469f-a165-70867728950e",
-  "total_jobs": 4,
+  "total_jobs": 3,
   "estimated_audio_seconds": 290.0,
   "estimated_completion_seconds": 21.7,
   "jobs": [
@@ -102,24 +206,6 @@ curl -X POST "https://api.soket.ai/transcribe/batch" \
 }
 ```
 
-## `GET /status/{job_id}`
-
-Returns the status and result for a single file job. Depending on state:
-
-- **Completed**: full job payload, including merged transcript/result when available.
-- **Queued or processing**: current job status and any metadata available so far (no final transcript yet).
-- **Failed or retrying**: job status plus error details when present.
-- **Not found**: `{ "error": "not found" }`.
-
-`job_id` is typically available in development/internal flows. Production clients usually track by `batch_id` and `file_id`.
-
-### Example
-
-```bash
-curl -X GET "https://api.soket.ai/transcribe/status/$JOB_ID" \
-  -H "Authorization: Bearer $JWT_TOKEN"
-```
-
 ## `GET /status/batch/{batch_id}`
 
 Returns aggregate progress across files and chunk jobs in the batch.
@@ -129,7 +215,7 @@ Returns aggregate progress across files and chunk jobs in the batch.
 ```json
 {
   "batch_id": "0f8fad5b-d9cb-469f-a165-70867728950e",
-  "total_files": 4,
+  "total_files": 3,
   "files_completed": 2,
   "files_failed": 0,
   "estimated_audio_seconds": 290.0,
@@ -160,8 +246,8 @@ Paginated results endpoint.
 - `raw` (default: `false`)  
   - `false`: merged per-file results
   - `true`: raw per-job records
-- `chunks` (optional bool):
-  - include chunk-level results inline when enabled
+- `chunks` (optional bool): include chunk-level results inline when enabled
+- `speech_information` (optional bool): include segment-level speech information (tone, accent, speaker_id, timestamps, etc.)
 
 ### Example (merged, completed-only)
 
@@ -193,6 +279,7 @@ Returns merged transcript and status for one file.
 ### Query params
 
 - `chunks` (optional bool): include per-chunk details
+- `speech_information` (optional bool): include segment-level speech information
 
 ### Example
 
@@ -218,6 +305,7 @@ Download all results for a batch as stream.
 - `format` (default: `ndjson`): `ndjson` or `json`
 - `raw` (default: `false`): raw per-job instead of merged per-file
 - `chunks` (optional bool): include chunk payloads in merged output
+- `speech_information` (optional bool): include segment-level speech information in merged output
 
 ### Example (NDJSON export)
 
@@ -240,28 +328,41 @@ curl -L -o "batch_completed.json" \
 ### Example A: Complete batch lifecycle
 
 ```bash
-# 1) Submit
-RESP=$(curl -s -X POST "https://api.soket.ai/transcribe/batch" \
+# 1) Upload files
+UPLOAD=$(curl -s -X POST "https://api.soket.ai/transcribe/files/upload" \
   -H "Authorization: Bearer $JWT_TOKEN" \
   -F "files=@/absolute/path/call_001.wav")
+
+echo "$UPLOAD"
+BATCH_UPLOAD_ID=$(echo "$UPLOAD" | python -c 'import sys,json; print(json.load(sys.stdin)["batch_upload_id"])')
+
+# 2) Poll upload status until completed
+curl -s -X GET "https://api.soket.ai/transcribe/files/upload/$BATCH_UPLOAD_ID" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+
+# 3) Submit batch
+RESP=$(curl -s -X POST "https://api.soket.ai/transcribe/batch" \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"batch_upload_id\": \"$BATCH_UPLOAD_ID\"}")
 
 echo "$RESP"
 BATCH_ID=$(echo "$RESP" | python -c 'import sys,json; print(json.load(sys.stdin)["batch_id"])')
 FILE_ID=$(echo "$RESP" | python -c 'import sys,json; print(json.load(sys.stdin)["jobs"][0]["file_id"])')
 
-# 2) Poll batch status
+# 4) Poll batch status
 curl -s -X GET "https://api.soket.ai/transcribe/status/batch/$BATCH_ID" \
   -H "Authorization: Bearer $JWT_TOKEN"
 
-# 3) Fetch first page of merged file results
+# 5) Fetch first page of merged file results
 curl -s -X GET "https://api.soket.ai/transcribe/results/batch/$BATCH_ID?page=1&limit=50" \
   -H "Authorization: Bearer $JWT_TOKEN"
 
-# 3b) Fetch one file result directly
+# 6) Fetch one file result directly
 curl -s -X GET "https://api.soket.ai/transcribe/results/file/$FILE_ID" \
   -H "Authorization: Bearer $JWT_TOKEN"
 
-# 4) Download full export
+# 7) Download full export
 curl -L -o "batch_${BATCH_ID}.ndjson" \
   "https://api.soket.ai/transcribe/download/batch/$BATCH_ID?format=ndjson" \
   -H "Authorization: Bearer $JWT_TOKEN"
@@ -278,7 +379,8 @@ curl -s -X GET "https://api.soket.ai/transcribe/results/file/$FILE_ID" \
 
 - `400`: invalid input or batch constraints violated.
 - `401`: missing/invalid JWT.
-- `404`: batch not found (download endpoint).
+- `404`: upload batch, batch, file, or `file_ids` not found.
+- `409`: uploads still in progress or `file_ids` not yet completed when submitting batch.
 - `429`: quota exceeded (if quota checks are enabled).
 - `503`: queue saturation or operational dependency unavailable.
 
@@ -287,6 +389,7 @@ curl -s -X GET "https://api.soket.ai/transcribe/results/file/$FILE_ID" \
 - Keep JWT examples as environment variable placeholders (`$JWT_TOKEN`), never hardcoded tokens.
 - Recommend NDJSON for large exports due to streaming-friendliness.
 - For UI polling, use `GET /status/batch/{batch_id}` as the lightweight progress endpoint.
+- Poll `GET /files/upload/{batch_upload_id}` before calling `POST /batch`.
 
 ## 5) Architecture and Queue Workflow
 
@@ -297,40 +400,40 @@ When a batch is submitted, the system runs a two-stage queue pipeline:
 
 ```mermaid
 flowchart TD
-    A["Client\nPOST /batch"] --> B[API Server]
+    A["Client\nPOST /files/upload"] --> B[API Server]
     B --> C[JWT verification]
-    C --> D["Validate limits\nbatch size/jobs/queue depth"]
-    D --> E[Store uploaded files to storage\nstream_upload]
-    D --> F[Parse audio_urls list]
+    C --> D["Spool files to disk\nbackground storage upload"]
+    D --> E["Client polls\nGET /files/upload/{id}"]
 
-    E --> G[Enqueue parent job\nasr_file_queue]
-    F --> G
-    G --> H[File Worker\nWORKER_MODE=file]
+    E --> F["Client\nPOST /batch"]
+    F --> G["Validate limits\nbatch size/jobs/queue depth"]
+    G --> H[Enqueue parent job\nasr_file_queue]
+    H --> I[File Worker\nWORKER_MODE=file]
 
-    H --> I["process_audio_job -> process_gcs_file_job"]
-    I --> J[Load audio from storage]
-    J --> K["Chunking (VAD/split_audio_into_chunks)"]
-    K --> L[Upload each chunk to storage]
-    L --> M[Enqueue chunk jobs\nasr_job_queue]
+    I --> J["process_audio_job -> process_gcs_file_job"]
+    J --> K[Load audio from storage]
+    K --> L["Chunking (VAD/split_audio_into_chunks)"]
+    L --> M[Upload each chunk to storage]
+    M --> N[Enqueue chunk jobs\nasr_job_queue]
 
-    M --> N[Chunk Worker\nWORKER_MODE=chunk]
-    N --> O[process_chunk_job]
+    N --> O[Chunk Worker\nWORKER_MODE=chunk]
+    O --> P[process_chunk_job]
 
-    O --> P{"INFERENCE_BATCH_SIZE > 1?"}
-    P -->|Yes| Q[Batch gate\ncollect chunk refs]
-    Q --> R["Gate leader pulls N chunks,\ndownloads in parallel,\nruns parallel ASR inference"]
-    P -->|No| S["Direct chunk ASR inference"]
+    P --> Q{"INFERENCE_BATCH_SIZE > 1?"}
+    Q -->|Yes| R[Batch gate\ncollect chunk refs]
+    R --> S["Gate leader pulls N chunks,\ndownloads in parallel,\nruns parallel ASR inference"]
+    Q -->|No| T["Direct chunk ASR inference"]
 
-    R --> T[Chunk result]
-    S --> T
-    T --> U["Persist chunk status/result"]
-    U --> V["Update completion counters\nchunks_done/chunks_failed"]
-    V --> W{"All chunks done?"}
-    W -->|No| M
-    W -->|Yes| X[Finalize parent job\nmerge chunk transcriptions]
-    X --> Y["Persist parent result/status"]
+    S --> U[Chunk result]
+    T --> U
+    U --> V["Persist chunk status/result"]
+    V --> W["Update completion counters\nchunks_done/chunks_failed"]
+    W --> X{"All chunks done?"}
+    X -->|No| N
+    X -->|Yes| Y[Finalize parent job\nmerge chunk transcriptions]
+    Y --> Z["Persist parent result/status"]
 
-    Y --> Z["Client polling endpoints\n/status, /status/batch,\n/results, /download"]
+    Z --> AA["Client polling endpoints\n/status/batch,\n/results, /download"]
 ```
 
 ### Queue map
@@ -355,7 +458,8 @@ Related env vars for separate mode:
 
 ### Major processes
 
-- **Ingress and validation**: auth, limits, back-pressure checks, and storage upload.
+- **Upload ingress**: auth, size limits, spool-to-disk, background storage upload.
+- **Batch ingress and validation**: auth, limits, back-pressure checks, and job enqueue.
 - **Parent stage**: normalize source input, load source audio, chunk, and enqueue child jobs.
 - **Chunk stage**: inference through direct ASR calls or batch gate coordination.
 - **Persistence and counters**: update job stores and completion counters.

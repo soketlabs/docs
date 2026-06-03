@@ -63,12 +63,25 @@
             "group": "Dhrith ASR API",
             "pages": [
               "api-reference/introduction",
-              "api-reference/endpoint/post-batch",
-              "api-reference/endpoint/get-status-job-id",
-              "api-reference/endpoint/get-status-batch-batch-id",
-              "api-reference/endpoint/get-results-batch-batch-id",
-              "api-reference/endpoint/get-results-file-file-id",
-              "api-reference/endpoint/get-download-batch-batch-id"
+              {
+                "group": "Files",
+                "pages": [
+                  "api-reference/endpoint/post-files-upload",
+                  "api-reference/endpoint/get-files-upload-batch-upload-id",
+                  "api-reference/endpoint/get-files",
+                  "api-reference/endpoint/delete-files"
+                ]
+              },
+              {
+                "group": "Batch Transcription",
+                "pages": [
+                  "api-reference/endpoint/post-batch",
+                  "api-reference/endpoint/get-status-batch-batch-id",
+                  "api-reference/endpoint/get-results-batch-batch-id",
+                  "api-reference/endpoint/get-results-file-file-id",
+                  "api-reference/endpoint/get-download-batch-batch-id"
+                ]
+              }
             ]
           }
         ]

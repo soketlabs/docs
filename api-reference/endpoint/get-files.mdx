@@ -1,0 +1,44 @@
+---
+openapi: "GET /files"
+---
+
+List all files uploaded by the authenticated user, flattened across upload batches. Returns newest files first.
+
+## Query params
+
+- `page` (default: `1`)
+- `limit` (default: `50`, max: `200`)
+- `upload_status` (optional): `pending`, `uploading`, `completed`, `failed`
+
+## Example
+
+```bash
+curl -X GET "https://api.soket.ai/transcribe/files?page=1&limit=50&upload_status=completed" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```
+
+## Typical response
+
+```json
+{
+  "page": 1,
+  "limit": 50,
+  "total_pages": 1,
+  "total_files": 2,
+  "count": 2,
+  "files": [
+    {
+      "batch_upload_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "file_id": "1374132b-b5db-4ec3-9cf1-f61f982e89b0",
+      "filename": "audio1.wav",
+      "content_type": "audio/wav",
+      "size_bytes": 1048576,
+      "estimated_duration_seconds": 65.5,
+      "upload_status": "completed",
+      "gcs_key": "uploads/2026/06/03/1374132b-b5db-4ec3-9cf1-f61f982e89b0.wav"
+    }
+  ]
+}
+```
+
+`gcs_key` is only included when `upload_status` is `completed`.

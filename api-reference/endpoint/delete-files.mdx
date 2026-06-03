@@ -1,0 +1,38 @@
+---
+openapi: "DELETE /files"
+---
+
+Delete one or more uploaded files by `file_id`. Removes storage objects, upload records, and any related transcription jobs.
+
+## Request body
+
+```json
+{
+  "file_ids": [
+    "1374132b-b5db-4ec3-9cf1-f61f982e89b0",
+    "2485243c-c6ec-5fd4-0dg2-g72g093f90c1"
+  ]
+}
+```
+
+## Example
+
+```bash
+curl -X DELETE "https://api.soket.ai/transcribe/files" \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"file_ids": ["1374132b-b5db-4ec3-9cf1-f61f982e89b0"]}'
+```
+
+## Typical response
+
+```json
+{
+  "deleted_file_ids": ["1374132b-b5db-4ec3-9cf1-f61f982e89b0"],
+  "deleted_count": 1,
+  "storage_objects_deleted": 1,
+  "jobs_cleaned": 0
+}
+```
+
+Returns `404` if any `file_id` is not found or not owned by the authenticated user.
