@@ -1,0 +1,36 @@
+---
+openapi: "GET /results/batch/{batch_id}"
+---
+
+Paginated batch results endpoint.
+
+## Query params
+
+- `status` (optional): `completed`, `failed`, `retrying`, `processing`
+- `page` (default: `1`)
+- `limit` (default: `50`, max: `200`)
+- `raw` (default: `false`)
+  - `false`: merged per-file results
+  - `true`: raw per-job records
+- `chunks` (optional bool): include chunk-level details inline
+- `speech_information` (optional bool): include segment-level speech information (tone, accent, speaker_id, timestamps, etc.)
+
+## Example (merged, completed only)
+
+```bash
+curl -X GET "https://api.soket.ai/transcribe/results/batch/$BATCH_ID?status=completed&page=1&limit=100" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```
+
+## Example (raw job records)
+
+```bash
+curl -X GET "https://api.soket.ai/transcribe/results/batch/$BATCH_ID?raw=true&page=1&limit=100" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```
+
+## Typical response shapes
+
+- `raw=false`: `{ batch_id, page, limit, total_pages, total_files, count, files: [...] }`
+- `raw=true`: `{ batch_id, page, limit, total_pages, total_jobs, count, jobs: [...] }`
+- Missing batch with no status filter: `{ "error": "batch not found" }`

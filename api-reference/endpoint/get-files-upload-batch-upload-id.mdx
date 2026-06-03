@@ -1,0 +1,43 @@
+---
+openapi: "GET /files/upload/{batch_upload_id}"
+---
+
+Poll upload progress for a `batch_upload_id` returned by `POST /files/upload`. Returns per-file `upload_status` and `gcs_key` for completed files.
+
+## Upload statuses
+
+- `pending` — queued for background upload
+- `uploading` — upload in progress
+- `completed` — ready for batch submission
+- `failed` — upload failed
+
+## Example
+
+```bash
+curl -X GET "https://api.soket.ai/transcribe/files/upload/$BATCH_UPLOAD_ID" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```
+
+## Typical response
+
+```json
+{
+  "batch_upload_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "status": "completed",
+  "total_files": 2,
+  "completed": 2,
+  "failed": 0,
+  "uploading": 0,
+  "pending": 0,
+  "files": [
+    {
+      "file_id": "1374132b-b5db-4ec3-9cf1-f61f982e89b0",
+      "filename": "audio1.wav",
+      "size_bytes": 1048576,
+      "estimated_duration_seconds": 65.5,
+      "upload_status": "completed",
+      "gcs_key": "uploads/2026/06/03/1374132b-b5db-4ec3-9cf1-f61f982e89b0.wav"
+    }
+  ]
+}
+```

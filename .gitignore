@@ -1,2 +1,4 @@
 .DS_Store
 test.mdx
+node_modules
+reference_code/

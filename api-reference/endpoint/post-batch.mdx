@@ -1,0 +1,76 @@
+---
+openapi: "POST /batch"
+---
+
+Submit a batch of audio for transcription. Accepts a JSON body with:
+
+- `batch_upload_id` (optional): include all completed files from one upload request
+- `file_ids` (optional): list of specific `file_id` strings from prior `POST /files/upload` responses
+- `sources` (optional): explicit list of GCS keys or URLs
+
+At least one of `batch_upload_id`, `file_ids`, or `sources` must resolve to at least one file. All fields can be combined in a single request.
+
+Each source item must include either `gcs_key` or `url`, and may include an optional `filename`.
+
+Uploaded files referenced by `batch_upload_id` or `file_ids` must have `upload_status: "completed"`. If uploads are still in progress, the API returns `409`.
+
+When a file is selected via `file_ids`, the same `file_id` from the upload response is reused for transcription results.
+
+## Example (from completed upload)
+
+```bash
+curl -X POST "https://api.soket.ai/transcribe/batch" \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "batch_upload_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  }'
+```
+
+## Example (specific file_ids)
+
+```bash
+curl -X POST "https://api.soket.ai/transcribe/batch" \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "file_ids": [
+      "1374132b-b5db-4ec3-9cf1-f61f982e89b0",
+      "2485243c-c6ec-5fd4-0dg2-g72g093f90c1"
+    ]
+  }'
+```
+
+## Example (upload batch + specific files + URLs)
+
+```bash
+curl -X POST "https://api.soket.ai/transcribe/batch" \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "batch_upload_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "file_ids": ["3596354d-d7fd-6ge5-1eh3-h83h104g01d2"],
+    "sources": [
+      {"url": "https://example.com/audio3.wav", "filename": "audio3.wav"}
+    ]
+  }'
+```
+
+## Typical response
+
+```json
+{
+  "batch_id": "0f8fad5b-d9cb-469f-a165-70867728950e",
+  "total_jobs": 3,
+  "estimated_audio_seconds": 290.0,
+  "estimated_completion_seconds": 21.7,
+  "jobs": [
+    {
+      "file_id": "1374132b-b5db-4ec3-9cf1-f61f982e89b0",
+      "filename": "audio1.wav",
+      "batch_id": "0f8fad5b-d9cb-469f-a165-70867728950e",
+      "status": "queued"
+    }
+  ]
+}
+```

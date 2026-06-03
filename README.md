@@ -10,17 +10,23 @@ Click on `Use this template` to copy the Mintlify starter kit. The starter kit c
 
 ### Development
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the documentation changes locally. To install, use the following command
+Install the [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the documentation changes locally. This project includes Mintlify as a local dependency, so use the pinned Node version in `.nvmrc`.
 
 ```
-npm i -g mintlify
+nvm install 24
+nvm use 24
+npm install
+npm run dev
 ```
 
-Run the following command at the root of your documentation (where mint.json is)
+If you prefer a global CLI install, use a supported Node version (Node 24 is recommended):
 
 ```
+npm i -g mintlify@latest
 mintlify dev
 ```
+
+If you hit a Node 25 compatibility error, downgrade to Node 24 or another active LTS release.
 
 ### Publishing Changes
 
@@ -28,5 +34,6 @@ Install our Github App to auto propagate changes from your repo to your deployme
 
 #### Troubleshooting
 
-- Mintlify dev isn't running - Run `mintlify install` it'll re-install dependencies.
-- Page loads as a 404 - Make sure you are running in a folder with `mint.json`
+- **Stuck on "preparing local preview..."** — Stop the server (Ctrl+C), then run `npm run dev` again. The first start can take 30–60 seconds while OpenAPI and pages are built. Use Node 24 (`nvm use`). Avoid `npx mintlify dev`; this repo uses the local CLI via `npm run dev`. If you only need prose pages (no API playground), use `npm run dev:quick`.
+- Mintlify dev isn't running — Run `npm install`, then `npm run dev`.
+- Page loads as a 404 — Run from the repo root that contains `docs.json`.

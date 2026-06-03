@@ -1,0 +1,36 @@
+---
+openapi: "POST /files/upload"
+---
+
+Accept one or more audio files as multipart form data. Files are spooled to disk immediately and uploaded to storage in the background. The response returns `202 Accepted` with a `batch_upload_id` you can poll until uploads finish.
+
+## Example
+
+```bash
+curl -X POST "https://api.soket.ai/transcribe/files/upload" \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -F "files=@/absolute/path/audio1.wav" \
+  -F "files=@/absolute/path/audio2.mp3"
+```
+
+## Typical response
+
+```json
+{
+  "batch_upload_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "status": "accepted",
+  "total_files": 2,
+  "spool_seconds": 0.42,
+  "files": [
+    {
+      "file_id": "1374132b-b5db-4ec3-9cf1-f61f982e89b0",
+      "filename": "audio1.wav",
+      "size_bytes": 1048576,
+      "estimated_duration_seconds": 65.5,
+      "upload_status": "pending"
+    }
+  ]
+}
+```
+
+Poll `GET /files/upload/{batch_upload_id}` until all files reach `upload_status: "completed"` before calling `POST /batch`.

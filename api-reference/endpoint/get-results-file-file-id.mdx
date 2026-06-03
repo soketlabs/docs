@@ -1,0 +1,25 @@
+---
+openapi: "GET /results/file/{file_id}"
+---
+
+Returns merged transcript and status for one file.
+
+## Query params
+
+- `chunks` (optional bool): include per-chunk details
+- `speech_information` (optional bool): include segment-level speech information (tone, accent, speaker_id, timestamps, etc.)
+
+## Example
+
+```bash
+curl -X GET "https://api.soket.ai/transcribe/results/file/$FILE_ID?chunks=true" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```
+
+## Typical response shape
+
+- Found file: `{ file_id, filename, status, result?, errors?, chunk_results? }`
+- Not found: `{ "error": "file not found" }`
+
+In development mode, additional counters may be included:
+`total_chunks`, `completed_chunks`, and `failed_chunks`.
